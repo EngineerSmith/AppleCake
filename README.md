@@ -1,18 +1,18 @@
 # AppleCake
 Visual Profiling tool for Love2D using Chromium's trace event profiling tool
 
-* [AppleCake Functions](###AppleCake functions)
+* [AppleCake Functions](###AppleCake-functions)
 * [Example](###Example)
-* [Viewing the data](###Viewing AppleCake)
+* [Viewing the data](###Viewing-AppleCake)
 
-##Installing
+## Installing
 run `git clone https://github.com/EngineerSmith/AppleCake` in your projects lib folder or where you choose
 
 You should be able to pull it into your project by requiring the folder you cloned the repository to, as the repository includes a `init.lua` file.
 If you cloned it to the suggested lib, you would have something similar to `require("lib.AppleCake")()`
 
-##Usage
-###Require
+## Usage
+### Require
 First you want to obtain the profiling tool, this will return a function that you're more than likely will call straight away.
 ```lua
 local profiler = require("lib.AppleCake")()
@@ -22,12 +22,12 @@ You can pass in false into this function that is return if you are wanting to di
 local profiler = require("lib.AppleCake")(true) -- Default option, that will return AppleCake
 local profiler = require("lib.AppleCake")(false) -- This option will turn AppleCake off
 ```
-###AppleCake functions
+### AppleCake functions
 #### .beginSession([filepath])
 This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time, this will be the file that is written to. If called again, it will close the previous session for you.
 ```lua
 profiler.beginSession() --Default option will create file "profile.json" in the path the project is ran from.
-profiler.beginSession("C:\file\path\profileSession.json")
+profiler.beginSession("C:/file/path/profileSession.json")
 ```
 #### .endSession()
 This close's the active session, this function needs to be called otherwise the file will not be closed correctly.
@@ -48,7 +48,7 @@ local function foo()
 end
 ```
 #### .profileFunc([profile])
-This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "<function name>@<file.lua>#<lineNum>" e.g. `function love.draw` in main.lua on line 24 becomes "draw@main.lua#24"
+This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "\<function name\>@\<file.lua\>#\<lineNum\>" e.g. `function love.draw` in main.lua on line 24 becomes "draw@main.lua#24"
 ```lua
 local _profile = profiler.profileFunc()
 
@@ -60,7 +60,14 @@ local function foo()
 	_profile:stop()
 end
 ```
-###Example
+#### .profile:stop()
+This stops a profile and records the elapsed time since the profile was created. You cannot stop a profile more than once.
+```lua
+_profile:stop()
+--or if you really wanted to
+_profile.stop(_profile)
+```
+### Example
 An example of AppleCake in a love2d project
 ```lua
 local lg = love.graphics
@@ -100,7 +107,7 @@ function love.draw()
 	_p:stop()
 end
 ```
-###Viewing AppleCake
-Open your Chromium browser of choice (Such as Chrome) and go to "chrome://tracing". Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling. You can use the tools to move around and look closer at the data. You can click on sections to see how long a profile took, along with it's name if you don't want to zoom in.
+### Viewing AppleCake
+Open your Chromium browser of choice (Such as Chrome) and go to "chrome://tracing". Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling. You can use the tools to move around and look closer at the data. You can click on sections to see how long a profile took, along with it's name if you don't want to zoom in.  
 Example of one frame from using the code in [Example](###Example).
 ![example](https://i.imgur.com/zabVoRs.png "Example of chrome tracing")
