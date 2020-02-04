@@ -24,7 +24,7 @@ local profiler = require("lib.AppleCake")(false) -- This option will turn AppleC
 ```
 **Warning**  You can only set the debug attribute once, then whenever you try to include it again it will return the same table.
 This is so you won't have to tell the library if you're in debug mode repeatively.  
-E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.AppleCake")()` again or in another file it will return the same table as the first require.
+E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.AppleCake")([true|false])` again or in another file it will return the same table as the first require.
 ### AppleCake functions
 #### .beginSession([filepath])
 This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time, this will be the file that is written to. If called again, it will close the previous session for you.
@@ -111,6 +111,6 @@ function love.draw()
 end
 ```
 ### Viewing AppleCake
-Open your Chromium browser of choice (Such as Chrome) and go to "chrome://tracing". Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling. You can use the tools to move around and look closer at the data. You can click on sections to see how long a profile took, along with it's name if you don't want to zoom in.  
+Open your Chromium browser of choice (Such as Chrome) and go to [chrome://tracing/](chrome://tracing/). Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling. You can use the tools to move around and look closer at the data. You can click on sections to see how long a profile took, along with it's name if you don't want to zoom in.  
 Example of one frame from using the code in [Example](###Example).
 ![example](https://i.imgur.com/zabVoRs.png "Example of chrome tracing")
