@@ -153,6 +153,9 @@ return function(debug)
 	if isDebug ~= nil then
 		debug = isDebug
 	end
+	if debug == nil then
+		debug = true
+	end
 	if debug then
 		isDebug = true
 		return AppleCake
