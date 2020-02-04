@@ -72,17 +72,15 @@ _profile:stop()
 ## Example
 An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
 ```lua
-local lg = love.graphics
-
-local appleCake = require("lib.AppleCake")(true)
-appleCake.beginSession() --Will create "profile.json" next to main.lua
+local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project
+appleCake.beginSession() -- Will create "profile.json" next to main.lua by default
 
 function love.quit()
-	appleCake.endSession() --Close the session when the program ends
+	appleCake.endSession() -- Close the session when the program ends
 end
 
 local function loop(count)
-	local _profileLoop = appleCake.profile("Loop "..count) --Adding parameters to profiles name
+	local _profileLoop = appleCake.profile("Loop "..count) -- Adding parameters to profiles name to view later
 	local n = 0
 	for i=0,count do
 		n = n + i
@@ -91,16 +89,17 @@ local function loop(count)
 end
 
 local r = 0
-local _profileUpdate --Example of reusing profile tables
+local _profileUpdate --Example of reusing profile tables to avoid garbage build up
 function love.update(dt)
 	_profileUpdate = appleCake.profileFunc(_profileUpdate)
-	r = r + 0.4 * dt
+	r = r + 0.5 * dt
 	loop(100000) -- Example of nested profiling, as the function has it's own profile
 	_profileUpdate:stop()
 end
 
+local lg = love.graphics
 function love.draw()
-	local _profileDraw = appleCake.profileFunc() --Will create new table everytime this function is ran
+	local _profileDraw = appleCake.profileFunc() -- This will create new profile table everytime this function is ran
 	lg.push()
 	lg.translate(50,50)
 	lg.rotate(r)
