@@ -34,7 +34,7 @@ profiler.beginSession() --Default option will create file "profile.json" in the 
 profiler.beginSession("C:/file/path/profileSession.json")
 ```
 #### .endSession()
-This close's the active session, this function needs to be called otherwise the file will not be closed correctly with the right formatting. If in the event of a crash, you might add "]}" to the end of the file to recover the data.
+This close's the active session, this function needs to be called otherwise the file will not be closed correctly with the right formatting. If in the event of a crash, you might add "]}" to the end of the json to recover the data, see (Crash)[#Crash].
 ```lua
 profiler.endSession()
 ```
@@ -65,50 +65,48 @@ local function foo()
 end
 ```
 #### .profile:stop()
-This stops a profile and records the elapsed time since the profile was created. You cannot stop a profile more than once.
+This stops a profile and records the elapsed time since the profile was created. You cannot stop a profile more than once, but can reuse the table by passing it back into AppleCake.
 ```lua
 _profile:stop()
---or if you really wanted to
-_profile.stop(_profile)
 ```
 ### Example
-An example of AppleCake in a love2d project. Example uses underscore infront of profiling, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project
+An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
 ```lua
 local lg = love.graphics
 
-local profiler = require("lib.AppleCake")()
-profiler.beginSession() --Will create "profile.json" next to main.lua
+local appleCake = require("lib.AppleCake")(true)
+appleCake.beginSession() --Will create "profile.json" next to main.lua
 
 function love.quit()
-	profiler.endSession() --Close the session when the program ends
+	appleCake.endSession() --Close the session when the program ends
 end
 
 local function loop(count)
-	local _p = profiler.profile("Loop "..count) --Adding parameters to name than using profileFunc
+	local _profileLoop = appleCake.profile("Loop "..count) --Adding parameters to profiles name
 	local n = 0
 	for i=0,count do
 		n = n + i
 	end
-	_p:stop()
+	_profileLoop:stop()
 end
 
 local r = 0
-local _pp --Example of reusing profile tables
+local _profileUpdate --Example of reusing profile tables
 function love.update(dt)
-	_pp = profiler.profileFunc(_pp)
+	_profileUpdate = appleCake.profileFunc(_profileUpdate)
 	r = r + 0.4 * dt
-	loop(100000) --Nested profiling
-	_pp:stop()
+	loop(100000) -- Example of nested profiling, as the function has it's own profile
+	_profileUpdate:stop()
 end
 
 function love.draw()
-	local _p = profiler.profileFunc() --Will create new table everytime this function is ran
+	local _profileDraw = appleCake.profileFunc() --Will create new table everytime this function is ran
 	lg.push()
 	lg.translate(50,50)
 	lg.rotate(r)
 	lg.rectangle("fill", 0,0,30,30)
 	lg.pop()
-	_p:stop()
+	_profileDraw:stop()
 end
 ```
 ### Viewing AppleCake
