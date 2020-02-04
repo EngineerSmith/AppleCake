@@ -16,12 +16,12 @@ If you cloned it to the suggested lib, you would have something similar to `requ
 ### Require
 First you want to obtain the profiling tool, this will return a function that you're more than likely will call straight away.
 ```lua
-local profiler = require("lib.AppleCake")()
+local appleCake = require("lib.AppleCake")()
 ```
 You can pass in false into this function that is return if you are wanting to disable the profiling tool. This will save time from trying to pull it out of your project when wanting to release it. 
 ```lua
-local profiler = require("lib.AppleCake")(true) -- Default option, that will return AppleCake
-local profiler = require("lib.AppleCake")(false) -- This option will turn AppleCake off
+local appleCake = require("lib.AppleCake")(true) -- Default option, that will return AppleCake
+local appleCake = require("lib.AppleCake")(false) -- This option will turn AppleCake off
 ```
 **Warning**  You can only set the debug attribute once, then whenever you try to include it again it will return the same table.
 This is so you won't have to tell the library if you're in debug mode repeatively.  
@@ -30,23 +30,23 @@ E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.A
 #### .beginSession([filepath])
 This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time. If called again, it will close the previous session for you. Sessions will overwrite the file if it already exists.
 ```lua
-profiler.beginSession() --Default option will create file "profile.json" in the path the project is ran from.
-profiler.beginSession("C:/file/path/profileSession.json")
+appleCake.beginSession() --Default option will create file "profile.json" in the path the project is ran from.
+appleCake.beginSession("C:/file/path/profileSession.json")
 ```
 #### .endSession()
 This close's the active session, this function needs to be called otherwise the file will not be closed correctly with the right formatting. If in the event of a crash, you might add "]}" to the end of the json to recover the data, see (Crash)[#Crash].
 ```lua
-profiler.endSession()
+appleCake.endSession()
 ```
 #### .profile(name, [profile])
 This function create's a new profile, or reuses the table passed in.
 ```lua
-local _profile = profiler.profile("love.update")
+local _profile = appleCake.profile("love.update")
 
 --Example of reusing profiles to save creating garbage
 local _profile
 local function foo()
-	_profile = profiler.profile("foo", _profile)
+	_profile = appleCake.profile("foo", _profile)
 	--...code
 	_profile:stop()
 end
@@ -54,12 +54,12 @@ end
 #### .profileFunc([profile])
 This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "\<function name\>@\<file.lua\>#\<lineNum\>" e.g. `function love.draw` in main.lua on line 24 becomes "draw​@main.lua#24"
 ```lua
-local _profile = profiler.profileFunc()
+local _profile = appleCake.profileFunc()
 
 --Example of reusing profiles to save creating garbage
 local _profile
 local function foo()
-	_profile = profiler.profileFunc(_profile)
+	_profile = appleCake.profileFunc(_profile)
 	--...code
 	_profile:stop()
 end
