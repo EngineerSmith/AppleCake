@@ -1,9 +1,9 @@
 # AppleCake
 Visual Profiling tool for Love2D using Chromium's trace event profiling tool
 
-* [AppleCake Functions](###AppleCake-functions)
-* [Example](###Example)
-* [Viewing the data](###Viewing-AppleCake)
+* [AppleCake Functions](#AppleCake-functions)
+* [Example](#Example)
+* [Viewing the data](#Viewing-AppleCake)
 
 ## Installing
 run `git clone https://github.com/EngineerSmith/AppleCake` in your projects lib folder or where you choose
