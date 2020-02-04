@@ -1,13 +1,13 @@
 --[[
 	AppleCake Profiling for Love2D
 	https://github.com/EngineerSmith/AppleCake
-	Docs - https://github.com/EngineerSmith/AppleCake/wiki
+	Docs can be found in the README.md
 	
 	Written by https://github.com/EngineerSmith or 
 	PSmith#4624 on Discord
 	
 	You can view the profiling data visually by going to 
-	chrome:\\tracing and dropping in the file created
+	chrome:\\tracing and dropping in the json created
 ]]
 
 local outputStream = nil
@@ -19,7 +19,7 @@ local getTime = function() -- Returns time in microseconds
 	return loveGetTime() * 1000000
 end
 
-local function errorOut(msg)
+local function errorOut(msg) -- Added to allow easy customization of error messages
 	error("Error thrown by AppleCake profiling tool\n".. msg)
 end
 
@@ -37,7 +37,7 @@ local function beginSession(filepath)
 	local err
 	outputStream, err = io.open(filepath, "wb")
 	if err then errorOut(err) end
-	--Header
+	-- Header
 	outputStream:write([[{"otherData":{},"traceEvents":[]])
 	outputStream:flush()
 end
@@ -45,7 +45,7 @@ end
 local function endSession()
 	validateOutputStream()
 	
-	--Footer
+	-- Footer
 	outputStream:write([[]}]])
 	outputStream:flush()
 	
@@ -108,7 +108,7 @@ local function profileFunc(profile)
 		end
 		return start(name)
 	end
-	errorOut("Could not generate name for this function function")
+	errorOut("Could not generate name for this function")
 end
 
 local AppleCake = {
@@ -117,14 +117,17 @@ local AppleCake = {
 			profile = start,
 			profileFunc = profileFunc,
 		}
+-- Following is used to disable AppleCake
+local emptyFunc = function() end -- Used to decrease number of anon empty functions created
+local emptyProfile = {stop=emptyFunc}
 local AppleCakeRelease = {
-			beginSession = function(filepath) end,
-			endSession = function() end,
-			profile = function(name, profile) return profile or {stop=function() end} end,
-			profileFunc = function(profile) return profile or {stop=function() end} end
+			beginSession = emptyFunc,
+			endSession = emptyFunc,
+			profile = function() return emptyProfile end,
+			profileFunc = function() return emptyProfile end,
 		}
 		
-local isDebug = nil
+local isDebug = nil -- Used to return the same table as first requested
 
 return function(debug)
 	if isDebug ~= nil then
