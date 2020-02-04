@@ -63,7 +63,25 @@ local function writeProfile(profile)
 	
 	local str = [[{"cat":"function","dur":]] .. (profile.finish - profile.start) ..
 				[[,"name":"]] .. profile.name:gsub('"','/"') ..
-				[[","ph":"X","pid":0,"ts":]] .. profile.start .. "}"
+				[[","ph":"X","pid":0,"ts":]] .. profile.start
+	if profile.args then
+		str = str .. [[,"args":{]]
+		local n = 0
+		for k, v in pairs(profile.args) do
+			if n > 0 then
+				str = str .. ","
+			end
+			n = n + 1
+			str = str .. [["]] .. tostring(k) ..[[":]]
+			if type(v) == "number" then
+				str = str .. tostring(v)
+			else
+				str = str .. [["]] .. tostring(v) .. [["]]
+			end
+		end
+		str = str .. "}}"
+	end
+	str = str .. "}"
 	outputStream:write(str)
 	outputStream:flush()
 end
@@ -77,24 +95,26 @@ local function stopProfile(profile)
 	profile._stopped = true
 end
 
-local function start(name, profile)
+local function start(name, args, profile)
 	if profile then
 		profile.name = name
 		profile.start = getTime()
 		profile._stopped = false
+		profile.args = args
 		return profile
 	else
 		return {
 			name = name,
 			start = getTime(),
-			stop = stopProfile
+			stop = stopProfile,
+			args = args,
 		}
 	end
 end
 
-local function profileFunc(profile)
+local function profileFunc(args, profile)
 	if profile then
-		return start(profile.name, profile)
+		return start(profile.name, args, profile)
 	end
 	local info = debug.getinfo(2, 'nS')
 	if info and info.name then
@@ -106,7 +126,7 @@ local function profileFunc(profile)
 				name = name .. "#" .. info.linedefined
 			end
 		end
-		return start(name)
+		return start(name, args)
 	end
 	errorOut("Could not generate name for this function")
 end
@@ -133,7 +153,7 @@ return function(debug)
 	if isDebug ~= nil then
 		debug = isDebug
 	end
-	if not debug then
+	if debug then
 		isDebug = true
 		return AppleCake
 	else
