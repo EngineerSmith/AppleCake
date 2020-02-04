@@ -69,7 +69,7 @@ This stops a profile and records the elapsed time since the profile was created.
 ```lua
 _profile:stop()
 ```
-### Example
+## Example
 An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
 ```lua
 local lg = love.graphics
@@ -109,9 +109,9 @@ function love.draw()
 	_profileDraw:stop()
 end
 ```
-### Viewing AppleCake
+## Viewing AppleCake
 Open your Chromium browser of choice (Such as Chrome) and go to [chrome://tracing/](chrome://tracing/). Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling. You can use the tools to move around and look closer at the data. You can click on sections to see how long a profile took, along with it's name if you don't want to zoom in.  
 Example of one frame from using the code in [Example](###Example).
 ![example](https://i.imgur.com/zabVoRs.png "Example of chrome tracing")
-### Crash
+## Crash
 If your application crashes or you didn't close the session, it is possible to recover the profiling data by adding "]}" to the json file, then continuing to use it as you normally would as the file is flushed everytime a profile is added.
