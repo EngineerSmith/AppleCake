@@ -22,6 +22,9 @@ You can pass in false into this function that is return if you are wanting to di
 local profiler = require("lib.AppleCake")(true) -- Default option, that will return AppleCake
 local profiler = require("lib.AppleCake")(false) -- This option will turn AppleCake off
 ```
+**Warning**  You can only set the debug attribute once, then whenever you try to include it again it will return the same table.
+This is so you won't have to tell the library if you're in debug mode repeatively.  
+E.g. if you do `require("lib.AppleCake")([true|false])`, if you do `require("lib.AppleCake")()` in another file it will return the same table as the first time you required the library.
 ### AppleCake functions
 #### .beginSession([filepath])
 This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time, this will be the file that is written to. If called again, it will close the previous session for you.
@@ -35,7 +38,7 @@ This close's the active session, this function needs to be called otherwise the 
 profiler.endSession()
 ```
 #### .profile(name, [profile])
-This function create's a new profile, or reuses the table passed in. 
+This function create's a new profile, or reuses the table passed in.
 ```lua
 local _profile = profiler.profile("love.update")
 
@@ -68,7 +71,7 @@ _profile:stop()
 _profile.stop(_profile)
 ```
 ### Example
-An example of AppleCake in a love2d project
+An example of AppleCake in a love2d project. Example uses underscore infront of profiling, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project
 ```lua
 local lg = love.graphics
 
@@ -80,7 +83,7 @@ function love.quit()
 end
 
 local function loop(count)
-	local _p = profiler.profile("Loop "..count) --Nested profiling
+	local _p = profiler.profile("Loop "..count) --Adding parameters to name than using profileFunc
 	local n = 0
 	for i=0,count do
 		n = n + i
@@ -98,7 +101,7 @@ function love.update(dt)
 end
 
 function love.draw()
-	local _p = profiler.profileFunc() --Will create new table everytime it's called
+	local _p = profiler.profileFunc() --Will create new table everytime this function is ran
 	lg.push()
 	lg.translate(50,50)
 	lg.rotate(r)

@@ -79,6 +79,7 @@ end
 
 local function start(name, profile)
 	if profile then
+		profile.name = name
 		profile.start = getTime()
 		profile._stopped = false
 		return profile
@@ -122,11 +123,18 @@ local AppleCakeRelease = {
 			profile = function(name, profile) return profile or {stop=function() end} end,
 			profileFunc = function(profile) return profile or {stop=function() end} end
 		}
+		
+local isDebug = nil
 
 return function(debug)
+	if isDebug ~= nil then
+		debug = isDebug
+	end
 	if not debug then
+		isDebug = true
 		return AppleCake
 	else
+		isDebug = false
 		return AppleCakeRelease
 	end
 end
