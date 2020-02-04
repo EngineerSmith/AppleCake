@@ -24,7 +24,7 @@ local profiler = require("lib.AppleCake")(false) -- This option will turn AppleC
 ```
 **Warning**  You can only set the debug attribute once, then whenever you try to include it again it will return the same table.
 This is so you won't have to tell the library if you're in debug mode repeatively.  
-E.g. if you do `require("lib.AppleCake")([true|false])`, if you do `require("lib.AppleCake")()` in another file it will return the same table as the first time you required the library.
+E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.AppleCake")()` again or in another file it will return the same table as the first require.
 ### AppleCake functions
 #### .beginSession([filepath])
 This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time, this will be the file that is written to. If called again, it will close the previous session for you.
