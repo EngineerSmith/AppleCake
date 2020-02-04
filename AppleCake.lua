@@ -80,8 +80,9 @@ local function writeProfile(profile)
 			end
 		end
 		str = str .. "}}"
+	else
+		str = str .. "}"
 	end
-	str = str .. "}"
 	outputStream:write(str)
 	outputStream:flush()
 end
