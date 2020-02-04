@@ -52,7 +52,7 @@ local function foo()
 end
 ```
 #### .profileFunc([profile])
-This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "\<function name\>@\<file.lua\>#\<lineNum\>" e.g. `function love.draw` in main.lua on line 24 becomes "draw@main.lua#24"
+This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "\<function name\>@\<file.lua\>#\<lineNum\>" e.g. `function love.draw` in main.lua on line 24 becomes "draw\@main.lua#24"
 ```lua
 local _profile = profiler.profileFunc()
 
