@@ -38,20 +38,21 @@ This close's the active session, this function needs to be called otherwise the 
 ```lua
 appleCake.endSession()
 ```
-#### .profile(name, [profile])
-This function create's a new profile, or reuses the table passed in.
+#### .profile(name, [args, profile])
+This function create's a new profile, or reuses the table passed in. Args is a flat table of named values that are viewable. Args can be changed until `stop` is called.
 ```lua
 local _profile = appleCake.profile("love.update")
 
 --Example of reusing profiles to save creating garbage
 local _profile
 local function foo()
-	_profile = appleCake.profile("foo", _profile)
+	_profile = appleCake.profile("foo", {num=5} _profile)
 	--...code
+	_profile.args["value"] = bar - 2
 	_profile:stop()
 end
 ```
-#### .profileFunc([profile])
+#### .profileFunc([args, profile])
 This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "\<function name\>@\<file.lua\>#\<lineNum\>" e.g. `function love.draw` in main.lua on line 24 becomes "draw​@main.lua#24"
 ```lua
 local _profile = appleCake.profileFunc()
@@ -59,8 +60,9 @@ local _profile = appleCake.profileFunc()
 --Example of reusing profiles to save creating garbage
 local _profile
 local function foo()
-	_profile = appleCake.profileFunc(_profile)
+	_profile = appleCake.profileFunc({num=5}, _profile)
 	--...code
+	_profile.args.num = 7
 	_profile:stop()
 end
 ```
@@ -91,7 +93,7 @@ end
 local r = 0
 local _profileUpdate --Example of reusing profile tables to avoid garbage build up
 function love.update(dt)
-	_profileUpdate = appleCake.profileFunc(_profileUpdate)
+	_profileUpdate = appleCake.profileFunc(nil, _profileUpdate)
 	r = r + 0.5 * dt
 	loop(100000) -- Example of nested profiling, as the function has it's own profile
 	_profileUpdate:stop()
@@ -105,6 +107,7 @@ function love.draw()
 	lg.rotate(r)
 	lg.rectangle("fill", 0,0,30,30)
 	lg.pop()
+	_profileDraw.args = lg.getStats() -- Set args that we can view later in the viewer
 	_profileDraw:stop()
 end
 ```
