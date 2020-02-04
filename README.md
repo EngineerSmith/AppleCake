@@ -39,14 +39,14 @@ This close's the active session, this function needs to be called otherwise the 
 appleCake.endSession()
 ```
 #### .profile(name, [args, profile])
-This function create's a new profile, or reuses the table passed in. Args is a flat table of named values that are viewable. Args can be changed until `stop` is called.
+This function create's a new profile, or reuses the table passed in. Args is a flat table of named values that are viewable. Args can be changed until `stop` is called. `Args` is nil by default.
 ```lua
 local _profile = appleCake.profile("love.update")
 
 --Example of reusing profiles to save creating garbage
 local _profile
 local function foo()
-	_profile = appleCake.profile("foo", {num=5} _profile)
+	_profile = appleCake.profile("foo", {num=5}, _profile)
 	--...code
 	_profile.args["value"] = bar - 2
 	_profile:stop()
