@@ -18,13 +18,13 @@ First you want to obtain the profiling tool, this will return a function that yo
 ```lua
 local appleCake = require("lib.AppleCake")()
 ```
-You can pass in false into this function that is return if you are wanting to disable the profiling tool. This will save time from trying to pull it out of your project when wanting to release it. 
+You can pass in false into this function that is returned if you are wanting to disable the profiling tool. This will save time from trying to pull it out of your project when wanting to release it.
 ```lua
 local appleCake = require("lib.AppleCake")(true) -- Default option, that will return AppleCake
 local appleCake = require("lib.AppleCake")(false) -- This option will turn AppleCake off
 ```
 **Warning**  You can only set the debug attribute once, then whenever you try to include it again it will return the same table.
-This is so you won't have to tell the library if you're in debug mode repeatively.  
+This is so you won't have to tell the library if you're in debug mode repeatively. As long it is the same lua state(not threading)  
 E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.AppleCake")([true|false])` again or in another file it will return the same table as the first require.
 ### AppleCake functions
 #### .beginSession([threaded, filepath])
