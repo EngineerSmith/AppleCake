@@ -1,5 +1,5 @@
 local PATH = (...):match("(.-)[^%.]+$")
-local dirPATH = PATH:gsub("[.]","/")
+local dirPATH = PATH:gsub("%.","/")
 --[[
 	AppleCake Profiling for Love2D
 	https://github.com/EngineerSmith/AppleCake
