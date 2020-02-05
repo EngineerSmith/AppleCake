@@ -78,6 +78,11 @@ This marks a point, useful to show events triggering than measuring time. Args w
 appleCake.mark("Loaded assets")
 appleCake.mark("Key pressed", {key="a"})
 ```
+#### .markMemory()
+This records the amount of memory the current Lua state is using as a mark.
+```lua
+appleCake.markMemory()
+```
 ## Example
 An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
 ```lua
@@ -102,12 +107,18 @@ local function loop(count)
 end
 
 local r = 0
+local k = 0
 local _profileUpdate --Example of reusing profile tables to avoid garbage build up
 function love.update(dt)
 	_profileUpdate = appleCake.profileFunc(nil, _profileUpdate)
 	r = r + 0.5 * dt
 	loop(100000) -- Example of nested profiling, as the function has it's own profile
 	_profileUpdate:stop()
+	
+	if k % 30 == 0 then -- We do it every 30 frames to not clutter our data
+		appleCake.markMemory() -- Adds mark with details of current lua memory usage
+	end
+	k = k + 1
 end
 
 local lg = love.graphics
@@ -119,7 +130,7 @@ function love.draw()
 	lg.rectangle("fill", 0,0,30,30)
 	lg.pop()
 	_profileDraw.args = lg.getStats() -- Set args that we can view later in the viewer
-	_profileDraw:stop()
+	_profileDraw:stop() -- By setting it to love.graphics.getStats we can see details of the draw
 end
 
 function love.keypressed(key)

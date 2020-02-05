@@ -112,12 +112,18 @@ local function mark(name, args, id)
 	end
 end
 
+local function markMemory()
+	local num = collectgarbage("count")
+	mark("Marm Memory", {bytes=num*1024,kbytes=num})
+end
+
 local AppleCake = {
 			beginSession = beginSession,
 			endSession = endSession,
 			profile = start,
 			profileFunc = profileFunc,
 			mark = mark,
+			markMemory = markMemory,
 		}
 -- Following is used to disable AppleCake
 local emptyFunc = function() end -- Used to decrease number of anon empty functions created
@@ -128,6 +134,7 @@ local AppleCakeRelease = {
 			profile = function() return emptyProfile end,
 			profileFunc = function() return emptyProfile end,
 			mark = emptyFunc,
+			markMemory = emptyFunc,
 		}
 		
 local isDebug = nil -- Used to return the same table as first requested
