@@ -32,7 +32,7 @@ local function beginSession(threaded, filepath)
 	if thread then
 		endSession()
 	end
-	if threaded then
+	if threaded == nil or threaded then
 		thread = loveThread.newThread(dirPATH.."thread.lua")
 		channel = loveThread.getChannel(require(PATH.."threadConfig").id)
 		channel:push({command="open",args={file=filepath}})

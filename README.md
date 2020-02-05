@@ -35,7 +35,7 @@ appleCake.beginSession(true, "C:/file/path/profileSession.json") --uses threads 
 appleCake.beginSession(false) -- Doesn't use threading and writes to default "profile.json"
 ```
 #### .endSession()
-This close's the active session, this function needs to be called otherwise the file will not be closed correctly with the right formatting. If in the event of a crash, you might add "]}" to the end of the json to recover the data, see (Crash)[#Crash].
+This close's the active session, this function needs to be called otherwise the file will not be closed correctly. If in the event of a crash or you didn't end the session, see (Crash)[#Crash].
 ```lua
 appleCake.endSession()
 ```
@@ -131,4 +131,4 @@ Open your Chromium browser of choice (Such as Chrome) and go to [chrome://tracin
 Example of one frame from using the code in [Example](###Example).
 ![example](https://i.imgur.com/6SBDkSc.png "Example of chrome tracing")
 ## Crash
-If your application crashes or you didn't close the session, it is possible to recover the profiling data by adding "]}" to the json file, then continuing to use it as you normally would as the file is flushed everytime a profile is added.
+If your application crashes or you didn't close the session, it is possible to recover the profiling data. It's setup that chrome://tracing will still accept the file. Use the file as you normally would.
