@@ -35,7 +35,7 @@ appleCake.beginSession(true, "C:/file/path/profileSession.json") --uses threads 
 appleCake.beginSession(false) -- Doesn't use threading and writes to default "profile.json"
 ```
 #### .endSession()
-This close's the active session, this function needs to be called otherwise the file will not be closed correctly. If in the event of a crash or you didn't end the session, see (Crash)[#Crash].
+This close's the active session, this function needs to be called otherwise the file will not be closed correctly. If in the event of a crash or you didn't end the session, see [Crash](#crash).
 ```lua
 appleCake.endSession()
 ```
