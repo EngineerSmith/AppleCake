@@ -27,11 +27,12 @@ local appleCake = require("lib.AppleCake")(false) -- This option will turn Apple
 This is so you won't have to tell the library if you're in debug mode repeatively.  
 E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.AppleCake")([true|false])` again or in another file it will return the same table as the first require.
 ### AppleCake functions
-#### .beginSession([filepath])
+#### .beginSession([threaded, filepath])
 This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time. If called again, it will close the previous session for you. Sessions will overwrite the file if it already exists.
 ```lua
-appleCake.beginSession() --Default option will create file "profile.json" in the path the project is ran from.
-appleCake.beginSession("C:/file/path/profileSession.json")
+appleCake.beginSession() --Default option will create file "profile.json" in the path the project is ran from on another thread
+appleCake.beginSession(true, "C:/file/path/profileSession.json") --uses threads and writes to given file
+appleCake.beginSession(false) -- Doesn't use threading and writes to default "profile.json"
 ```
 #### .endSession()
 This close's the active session, this function needs to be called otherwise the file will not be closed correctly with the right formatting. If in the event of a crash, you might add "]}" to the end of the json to recover the data, see (Crash)[#Crash].
@@ -75,7 +76,7 @@ _profile:stop()
 An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
 ```lua
 local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project
-appleCake.beginSession() -- Will create "profile.json" next to main.lua by default
+appleCake.beginSession(true) -- Will create "profile.json" next to main.lua by default, and writes on another thread
 
 function love.quit()
 	appleCake.endSession() -- Close the session when the program ends

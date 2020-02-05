@@ -1,3 +1,5 @@
+local PATH = (...):match("(.-)[^%.]+$")
+local dirPATH = PATH:gsub("[.]","/")
 --[[
 	AppleCake Profiling for Love2D
 	https://github.com/EngineerSmith/AppleCake
@@ -10,81 +12,43 @@
 	chrome:\\tracing and dropping in the json created
 ]]
 
-local outputStream = nil
-local profileCount = 0
+local stream = nil
+local channel = nil
+local thread = nil
 
+local loveThread = love.thread
 local loveGetTime = love.timer.getTime
 
 local getTime = function() -- Returns time in microseconds
 	return loveGetTime() * 1000000
 end
 
-local function errorOut(msg) -- Added to allow easy customization of error messages
-	error("Error thrown by AppleCake profiling tool\n".. msg)
+local function errorOut(msg)
+	error("Error thrown by AppleCake\n".. msg)
 end
 
-local function validateOutputStream()
-	if not outputStream then
-		errorOut("outputStream is Nil")
+local function beginSession(threaded, filepath)
+	if thread then
+		endSession()
 	end
-end
-
-local function beginSession(filepath)
-	if outputStream then
-		EndSession()
+	if threaded then
+		thread = loveThread.newThread(dirPATH.."thread.lua")
+		channel = loveThread.getChannel(require(PATH.."threadConfig").id)
+		channel:push({command="open",args={file=filepath}})
+		thread:start(PATH)
+	else
+		require(PATH.."outputStream").openStream(filepath)
 	end
-	filepath = filepath or "profile.json"
-	local err
-	outputStream, err = io.open(filepath, "wb")
-	if err then errorOut(err) end
-	-- Header
-	outputStream:write([[{"otherData":{},"traceEvents":[]])
-	outputStream:flush()
 end
 
 local function endSession()
-	validateOutputStream()
-	
-	-- Footer
-	outputStream:write([[]}]])
-	outputStream:flush()
-	
-	outputStream:close()
-	outputStream = nil
-	profileCount = 0
-end
-
-local function writeProfile(profile)
-	validateOutputStream()
-	if profileCount > 0 then
-		outputStream:write(",")
-	end
-	profileCount = profileCount + 1
-	
-	local str = [[{"cat":"function","dur":]] .. (profile.finish - profile.start) ..
-				[[,"name":"]] .. profile.name:gsub('"','/"') ..
-				[[","ph":"X","pid":0,"ts":]] .. profile.start
-	if profile.args then
-		str = str .. [[,"args":{]]
-		local n = 0
-		for k, v in pairs(profile.args) do
-			if n > 0 then
-				str = str .. ","
-			end
-			n = n + 1
-			str = str .. [["]] .. tostring(k) ..[[":]]
-			if type(v) == "number" then
-				str = str .. tostring(v)
-			else
-				str = str .. [["]] .. tostring(v) .. [["]]
-			end
-		end
-		str = str .. "}}"
+	if thread then
+		channel:push({command="close"})
+		thread:wait()
+		thread = nil
 	else
-		str = str .. "}"
+		require(PATH.."outputStream").closeStream()
 	end
-	outputStream:write(str)
-	outputStream:flush()
 end
 
 local function stopProfile(profile)
@@ -92,7 +56,13 @@ local function stopProfile(profile)
 		errorOut("Attempted to stop and write profile more than once")
 	end
 	profile.finish = getTime()
-	writeProfile(profile)
+	if thread then
+		profile.stop = nil --Can't push functions
+		channel:push({command="write",args={profile=profile}})
+		profile.stop = stopProfile
+	else
+		require(PATH.."outputStream").writeProfile(profile)
+	end
 	profile._stopped = true
 end
 
