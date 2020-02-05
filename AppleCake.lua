@@ -12,9 +12,10 @@ local dirPATH = PATH:gsub("%.","/")
 	chrome:\\tracing and dropping in the json created
 ]]
 
-local stream = nil
 local channel = nil
 local thread = nil
+
+local outputStream = require(PATH.."outputStream")
 
 local loveThread = love.thread
 local loveGetTime = love.timer.getTime
@@ -37,7 +38,7 @@ local function beginSession(threaded, filepath)
 		channel:push({command="open",args={file=filepath}})
 		thread:start(PATH)
 	else
-		require(PATH.."outputStream").openStream(filepath)
+		outputStream.openStream(filepath)
 	end
 end
 
@@ -47,7 +48,7 @@ local function endSession()
 		thread:wait()
 		thread = nil
 	else
-		require(PATH.."outputStream").closeStream()
+		outputStream.closeStream()
 	end
 end
 
@@ -61,7 +62,7 @@ local function stopProfile(profile)
 		channel:push({command="write",args={profile=profile}})
 		profile.stop = stopProfile
 	else
-		require(PATH.."outputStream").writeProfile(profile)
+		outputStream.writeProfile(profile)
 	end
 	profile._stopped = true
 end
@@ -102,11 +103,21 @@ local function profileFunc(args, profile)
 	errorOut("Could not generate name for this function")
 end
 
+local function mark(name, args, id)
+	local mark = {name=name,args=args,start=getTime(),id=id}
+	if thread then
+		channel:push({command="write",args={mark=mark}})
+	else
+		outputStream.writeMark(mark)
+	end
+end
+
 local AppleCake = {
 			beginSession = beginSession,
 			endSession = endSession,
 			profile = start,
 			profileFunc = profileFunc,
+			mark = mark,
 		}
 -- Following is used to disable AppleCake
 local emptyFunc = function() end -- Used to decrease number of anon empty functions created
@@ -116,6 +127,7 @@ local AppleCakeRelease = {
 			endSession = emptyFunc,
 			profile = function() return emptyProfile end,
 			profileFunc = function() return emptyProfile end,
+			mark = emptyFunc,
 		}
 		
 local isDebug = nil -- Used to return the same table as first requested

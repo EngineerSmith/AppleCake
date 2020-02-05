@@ -72,6 +72,12 @@ This stops a profile and records the elapsed time since the profile was created.
 ```lua
 _profile:stop()
 ```
+#### .mark(name, [args, id])
+This marks a point, useful to show events triggering than measuring time. Args will show exactly like args do in normal profiling.
+```lua
+appleCake.mark("Loaded assets")
+appleCake.mark("Key pressed", {key="a"})
+```
 ## Example
 An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
 ```lua
@@ -80,6 +86,10 @@ appleCake.beginSession(true) -- Will create "profile.json" next to main.lua by d
 
 function love.quit()
 	appleCake.endSession() -- Close the session when the program ends
+end
+
+function love.load()
+	appleCake.mark("Started load") -- Adds a mark, can be used to show an events or other details
 end
 
 local function loop(count)
@@ -110,6 +120,10 @@ function love.draw()
 	lg.pop()
 	_profileDraw.args = lg.getStats() -- Set args that we can view later in the viewer
 	_profileDraw:stop()
+end
+
+function love.keypressed(key)
+	appleCake.mark("Key Pressed", {key=key}) -- Adds a mark everytime a key is pressed, with the key as an argument
 end
 ```
 ## Viewing AppleCake
