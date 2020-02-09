@@ -65,6 +65,6 @@ function love.keypressed(key)
 end
 ```
 ## Viewing AppleCake
-Open your Chromium browser of choice (Such as Chrome) and go to [chrome://tracing/](chrome://tracing/). Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling data it's recorded. You can use the tools to move around and look closer at the data.  
-Example of one frame, see the docs for more details.
+Open Chrome and go to `chrome://tracing/`. Once the page has loaded, you can drag and drop the created `*.json` into the page. This will then load and show you the profiling data it's recorded. You can use the tools to move around and look closer at the data.  
+Example of a frame of data, see the docs for more examples and details.
 ![example](https://i.imgur.com/6SBDkSc.png "Example of chrome tracing")
