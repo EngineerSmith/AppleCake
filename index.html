@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <title>AppleCake</title>
+    
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://i.imgur.com/297rfgD.png">
+	
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome JS-->
+    <script defer src="https://kit.fontawesome.com/a076d05399.js"></script>
+    
+    <!-- Plugins CSS -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.2/styles/atom-one-dark.min.css">
+
+    <!-- Theme CSS -->
+    <link id="theme-style" rel="stylesheet" href="https://gitcdn.link/repo/EngineerSmith/ffdeeca9a45d62a9a060009110665a6d/raw/09645d508d5ca39cf0d806073edaaae5ac776ab0/theme.css">
+</head> 
+
+<body class="docs-page">    
+    <header class="header fixed-top">	    
+        <div class="branding docs-branding">
+            <div class="container-fluid position-relative py-2">
+                <div class="docs-logo-wrapper">
+					<button id="docs-sidebar-toggler" class="docs-sidebar-toggler docs-sidebar-visible mr-2 d-xl-none" type="button">
+	                    <span></span>
+	                    <span></span>
+	                    <span></span>
+	                </button>
+	                <div class="site-logo"><a class="navbar-brand" href="index.html"><span class="logo-text">AppleCake<span class="text-alt">Docs</span></span></a></div>    
+                </div>
+	            <div class="docs-top-utilities d-flex justify-content-end align-items-center">
+					<ul class="social-list list-inline mx-md-3 mx-lg-5 mb-0 d-none d-lg-flex">
+						<li class="list-inline-item">
+							<a href="https://github.com/EngineerSmith/AppleCake"target="_blank"><i class="fab fa-github fa-fw"></i></a>
+						</li>
+		            </ul>
+	            </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="docs-wrapper">
+	    <div id="docs-sidebar" class="docs-sidebar">
+		    <div class="top-search-box d-lg-none p-3">
+                <form class="search-form">
+		            <input type="text" placeholder="Search the docs..." name="search" class="form-control search-input">
+		            <button type="submit" class="btn search-btn" value="Search"><i class="fas fa-search"></i></button>
+		        </form>
+            </div>
+		    <nav id="docs-nav" class="docs-nav navbar">
+			    <ul class="section-items list-unstyled nav flex-column pb-3">
+					<li class="nav-item section-title"><a class="nav-link scrollto active" href="#introduction"><span class="theme-icon-holder mr-2"><i class="fas fa-book"></i></span>Introduction</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#introduction-example">Quick Example</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#introduction-example-full">Fully Featured Example</a></li>
+					<li class="nav-item section-title"><a class="nav-link scrollto active" href="#tutorial"><span class="theme-icon-holder mr-2"><i class="fas fa-tools"></i></span>Tutorial</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#tutorial-installation">Installation</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#tutorial-started">Getting Started</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#tutorial-threading">Threading</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#tutorial-tracing">Tracing Tool</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#tutorial-crash">File Recovery</a></li>
+					<li class="nav-item section-title"><a class="nav-link scrollto active" href="#functions"><span class="theme-icon-holder mr-2"><i class="fas fa-cogs"></i></span>Functions</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#function-beginSession">.beginSession</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#function-endSession">.endSession</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#function-profile">.profile</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#function-profileFunc">.profileFunc</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#function-profile-stop">profile:stop</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#function-mark">.mark</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#function-markMemory">.markMemory</a></li>
+			    </ul>
+		    </nav>
+	    </div>
+	    <div class="docs-content">
+		    <div class="container">
+				<article class="docs-article" id="introduction">
+					<header class="docs-header">
+						<h1 class="docs-heading">Introduction<!--<span class="docs-time">Last updated: 2020-02-07</span>--></h1><!--TODO date-->
+						<section class="docs-intro">
+							<p>AppleCake is a profiler for Love2D. It uses Chrome's trace tool to show you your profiling data. You can get to the tool by going to <code>chrome://tracing</code> or <code>about://tracing</code> (It cannot be linked to for security reasons, but you can highlight and drag to a new tab). You can only access the tool through Chrome! Any version of chrome will have this feature.</p><br/>
+							<h5>Features</h5>
+							<ul>
+								<li><strong class="mr-1">Profile</strong> how long code takes</li>
+								<li><strong class="mr-1">Nested Profiling</strong>, so you can get more detailed information</li>
+								<li><strong class="mr-1">Mark</strong> timeless events when they happen</li>
+								<li><strong class="mr-1">View variables</strong> later in the trace tool as args</li>
+								<li>Profile <strong class="mr-1">Lua's memory</strong> usage</li>
+								<li><strong class="mr-1">Multi-threaded profiling</strong> support</li>
+								<li><strong class="mr-1">Disable for release</strong>, so you won't have to go through and remove AppleCake</li>
+								<li>Recover <strong class="mr-1">Crashed</strong> data with ease</li>
+								</li>
+							</ul>
+						</section>
+					</header>
+					<section class="docs-section" id="introduction-example">
+						<h2 class="section-heading" id="example">Quick Example</h2>
+						<p>A short example displaying it's basic usage in your project, so you can get a feel for it.</p>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/4a65e074d108dde0f0241fe4e672f63c.js"></script>
+						</div>
+						<p>Once ran it will produce a <code>*.json</code> that can be dropped in to the tracing tool <code>chrome://tracing</code>. You can find the resulting file for the above code produced <a href="https://gist.github.com/EngineerSmith/5afdf9539dceb8381b3bd3ba34a17208"target="_blank"><i class="fas fa-external-link-alt"></i>here</a>. It should look like the following.</p>
+						<img class="figure-img img-fluid shadow rounded" src="https://i.imgur.com/w5rzxWH.png" alt="" style="width: 600px;">
+						<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>Quick look at what the data will look like.</figcaption>
+					</section>
+					<section class="docs-section" id="introduction-example-full">
+						<h2 class="section-heading">Fully Featured Example</h2>
+						<p>This example has a lot more detail than the previous to show it's full features.</p>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/956f2cc2832cbb751686c4b438f0366d.js"></script>
+						</div>
+					</section>
+				</article>
+				
+				<article class="docs-article" id="tutorial">
+				    <header class="docs-header">
+						<h1 class="docs-heading">Tutorial</h1>
+						<section class="docs-intro">
+							<p>Tutorials on how to use AppleCake affectively.</p>
+						</section>
+					</header>
+					
+					<section class="docs-section" id="tutorial-installation">
+						<h2 class="section-heading">Installation</h2>
+						<p>Run <code>git clone https://github.com/EngineerSmith/AppleCake</code> in your project, suggested to do it within a <code>lib</code> folder, but it's up to you how your project is structured. You could otherwise download the zip from the <a href="https://github.com/EngineerSmith/AppleCake"target="_blank"><i class="fas fa-external-link-alt"></i>GitHub page</a> and unzip it.<br/>The project contains a <code>init.lua</code> so you can directly require the project folder.</p>
+						
+						<h3>Require</h3>
+						<p>AppleCake returns a function when required, this function has a parameter that will be saved for the entire project. By default it's set to true, the details are as followed.</p>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/f8aac68b36d1dfd67615efd48fe8c5f2.js"></script>
+						</div>
+						<div class="callout-block callout-block-warning">
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder mr-1">
+		                                <i class="fas fa-bullhorn"></i>
+		                            </span>
+	                                Warning
+	                            </h4>
+                                <p>Be aware that this setting is set across threads, which allows you to require AppleCake in threads without having to set if you're within debug mode. Only the first require ran will set if AppleCake is active or not for all threads. So you can freely do <code>require("AppleCake")()</code> and get the correct table for the first set mode.</p>
+                            </div>
+                        </div>
+						<p>AppleCake uses less memory and processing when turned off, but any table created to put args into AppleCake profiles or marks will still be active. You can use the variable <code>appleCake.isDebug</code> to find out if AppleCake is active or not if you wish.</p>
+					</section>
+					
+					<section class="docs-section" id="tutorial-started">
+						<h2 class="section-heading">Getting started</h3>
+						<p>The most basic set-up is as followed. This will write all profiling data to the same file. You can have multiple sessions setup if you wanted to break up your profiling data, but only one can be active at a time.</p>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/1a8ab1dafafd8662ea8c1bf0d7a6e34a.js"></script>
+						</div>
+						<p>Once the session has began, you can start profiling. You can use profiling like this to see how long your functions take and what they do.</p>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/46c6847e44701cc19e9edb2ffd616cc7.js"></script>
+						</div>
+						<p>There are also marks to add a timeless event, such as when your game switches state. You can also measure how much memory Lua is currently using at any given point.</p>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/767f54ea53cbdd876b0a0cc6a0a8a500.js"></script>
+						</div>
+						<p>These are examples of AppleCakes main functionality, check out the individual documentation on each function for further details of their use with more examples.</p>
+					</section>
+					
+					<section class="docs-section" id="tutorial-threading">
+						<h2 class="section-heading">Threading</h2>
+						<p>This section will show an example how to profile different threads of your project. This could be used to explain how to use AppleCake in other files than the first file you require it in.<br/>You want to require and set debug level in your main thread otherwise you will not have control over beginning and ending a session.</p>
+						<div class="callout-block callout-block-warning">
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder mr-1">
+		                                <i class="fas fa-bullhorn"></i>
+		                            </span>
+	                                Warning
+	                            </h4>
+                                <p>As AppleCake requires <code>love.timer</code> it will require the module if it isn't loaded; even if AppleCake is disabled.</p>
+                            </div>
+                        </div>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/73ced19259b26fa2f95b4a168f55f1a1.js"></script>
+						</div>
+					</section>
+					
+					<section class="docs-section" id="tutorial-tracing">
+						<h2 class="section-heading">Tracing Tool</h2>
+						<p>This will try to explain how to use the tracing tool, if you have any questions contact me through Love2D's <a href="https://discord.gg/rhUets9"target="_blank"><i class="fas fa-external-link-alt"></i>Discord server</a> (@psmith#4628).</p>
+						<p>First you will need to go to <code>chrome://tracing</code> where you can drag the created json into the website. This should read the file and then display it, otherwise it will tell you if there was any problems with the file.</p>
+						<h4>Shortcuts</h4>
+						<p>It's vital that you learn how to navigate around your data. You can view all the shortcuts by pressing the <code>?</code> in the upper right corner of the page. We will go over how to use certain tools to see more details, but have a play around and learn.</p>
+						<img class="figure-img img-fluid shadow rounded" src="https://i.imgur.com/d4a0mjN.png" alt="" style="width: 600px;">
+						<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>As you may have a different version, it's recommended to check your own page for shortcuts.</figcaption>
+						<h4>Basic View</h4>
+						<p>This will be the view once you drop your json into the tracing tool. You can use the first tool to select parts of data, Click and drag over a row(s)<code>Shortcut: 1</code>. This will give a breakdown of what you've selected and how long they took. You can click on the individual names to see all the currently selected ones of that (Not the magnifying glass). You can use this view to then compare args of the selected.</p>
+						<div class="callout-block callout-block-info">
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder mr-1">
+		                                <i class="fas fa-info-circle"></i>
+		                            </span>
+	                                Note
+	                            </h4>
+                                <p>All time is given in MS, microseconds</p>
+                            </div><!--//content-->
+                        </div><!--//callout-block-->
+						<img class="figure-img img-fluid shadow rounded" src="https://i.imgur.com/T3Um9s5.png" alt="" style="width: 600px;">
+						<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses an edited version the example given in <a class="scrollto" href="#introduction-example-full">Fully Featured Example</a>.</figcaption>
+						<h4 id="tutorial-marks">Marks</h4>
+						<p>There are two types of marks, <code>"p"</code> or <code>"t"</code>. <code>"p"</code> will add a line across the graph (Blue circle). While <code>"t"</code> will add a timeless section (Red circle). You will need to click and drag to select Marks unless you have amazing aim.</p>
+						<img class="figure-img img-fluid shadow rounded" src="https://i.imgur.com/Lix5u12.png" alt="" style="width: 600px;">
+						<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses the example given in <a class="scrollto" href="#tutorial-threading">Threading</a>.</figcaption>
+						<h4>Zoom</h4>
+						<p>You can zoom into a single frame using <code>Shortcut 3</code> and use the previous drag and click tool to select just the profiling data for that frame.</p>
+						<img class="figure-img img-fluid shadow rounded" src="https://i.imgur.com/3ldNnYf.png" alt="" style="width: 600px;">
+						<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses the example given in <a class="scrollto" href="#introduction-example-full">Fully Featured Example</a>.</figcaption>
+						<h4>Args/Graphs</h4>
+						<p>You can click any section or mark to view it's arguments, but you can also compare selected items. Once selected, press the <code>Start</code> radio button to get the following view. You can also press <code>Duration</code> to get a break down of how long a profile took.</p>
+						<img class="figure-img img-fluid shadow rounded" src="https://i.imgur.com/9m2StLZ.png" alt="" style="width: 600px;">
+						<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses an edited version the example given in <a class="scrollto" href="#introduction-example-full">Fully Featured Example</a>.</figcaption>
+					</section>
+					
+					<section class="docs-section" id="tutorial-crash">
+						<h2 class="section-heading">File Recovery</h2>
+						<p>You can recover some profiling data even if <code>endSession</code> wasn't called. As AppleCake flushes every time it adds a profile or marker to the data, you can drop it into the tracing tool <code>chrome://tracing</code>. It should be able to read what data has been written, unless the file has become corrupted. It will tell you what is wrong with the file, you might be able to open it and fix the json formatting. The file is just a json array, than a full json format.</p>
+					</section>
+				</article>
+				<article class="docs-article" id="functions">
+				    <header class="docs-header">
+						<h1 class="docs-heading">Functions</h1>
+						<section class="docs-intro">
+							<p>Documentation on functions available in AppleCake.</p>
+						</section>
+					</header>
+					<section class="docs-section" id="function-beginSession">
+						<h2 class="section-heading">.beginSession([filepath])</h2>
+						<p>Must be called to start writing profiling to file. Doesn't return anything. Can only be called on the thread that first required AppleCake and only one session can be active at a time.</p>
+						<div class="table-responsive my-4">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th scope="col">Parameter</th>
+										<th scope="col">Optional</th>
+										<th scope="col">Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">filepath</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>profile.json</code>. It's the filepath to the file you want written to, it will create or overwrite anything in it's place.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/7fd575dfdd4420d46fa2281a1dc94538.js"></script>
+						</div>
+					</section>
+					<section class="docs-section" id="function-endSession">
+						<h2 class="section-heading">.endSession()</h2>
+						<p>Must be called to close the file correctly. This function ends and waits for it's thread to rejoin. So calling this function can be slow if there are a lot of profiles or marks waiting in the queue, but it will wait until they have all be written before continuing.</p>
+						<div class="callout-block callout-block-success">
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder mr-1">
+		                                <i class="fas fa-thumbs-up"></i>
+		                            </span>
+	                                Tip
+	                            </h4>
+                                <p>It's possible to recover some session data if it wasn't ended, check out <a class="scrollto" href="#introduction-crash">File recovery</a>.</p>
+                            </div>
+                        </div>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/5321e9d7ec10b9e7caf28676203954bc.js"></script>
+						</div>
+					</section>
+					<section class="docs-section" id="function-profile">
+						<h2 class="section-heading">.profile(name, [args, profile])</h2>
+						<p>This function creates a new profile table, or reuses the table passed in. Use a <a class="scrollto" href="#function-mark">mark</a> to mark timeless events than creating a profile and stopping it instantly</p>
+						<div class="table-responsive my-4">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th scope="col">Parameter</th>
+										<th scope="col">Optional</th>
+										<th scope="col">Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">name</th>
+										<td class="text-center"><i class="fa fa-times-circle"></i></td>
+										<td>Name of the profile, this is so you can identify the profile later in the viewer.</td>
+									</tr>
+									<tr>
+										<th scope="row">args</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>nil</code>. Args is a flat table of values (string and number types). Args can be changed until <code>:stop()</code> is called.</td>
+									</tr>
+									<tr>
+										<th scope="row">profile</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>nil</code>. Reuse a previous profile, to avoid creating new tables, this is the recommended way to use AppleCake.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/61e59f8663b3b150244ce351cb9ee1a0.js"></script>
+						</div>
+					</section>
+					<section class="docs-section" id="function-profileFunc">
+						<h2 class="section-heading">.profileFunc([args, profile])</h2>
+						<p>This function creates a new profile table, or reuses the table passed in. It generates the name of the function it is currently running in for you.<br/>For example, if you were profiling <code>function love.update(dt)</code> it will give <code>update@main.lua#XX</code> XX being the line it is declared on. <code>func@file.lua#line</code> Note that won't say the path of the file. In the event of profiling an anon function, it will use the function's memory address as the function name.</p>
+						<div class="table-responsive my-4">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th scope="col">Parameter</th>
+										<th scope="col">Optional</th>
+										<th scope="col">Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">args</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>nil</code>. Args is a flat table of values (string and number types). Args can be changed until <code>:stop()</code> is called.</td>
+									</tr>
+									<tr>
+										<th scope="row">profile</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>nil</code>. Reuse a previous profile, to avoid creating new tables, this is the recommended way to use AppleCake. As the name is reused instead of regenerating it, you have to pass in the same profile than reusing it for multiple profiles.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/90e60beefaac8efc43e0b7d3a74fc50d.js"></script>
+						</div>
+					</section>
+					<section class="docs-section" id="function-profile-stop">
+						<h2 class="section-heading">profile:stop()</h2>
+						<p>This function can only be called from created profiles. It can only be called once, it has to be passed back into a profile function to reuse it.</p>
+						<h5>._stopProfile(profile)</h5>
+						<p>This is the same function that is stored in <code>profile.stop</code>. It has been added for ease of access if you wished use it or access it. The underscore is used to show it is a private function. Changing this variable will not change which function profile (created or reuse) call when <code>profile:stop()</code> is called. <code>appleCake._stopProfile(profile)</code></p>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/2c21641b8349278194233e9fff1235d8.js"></script>
+						</div>
+					</section>
+					<section class="docs-section" id="function-mark">
+						<h2 class="section-heading">.mark(name, [scope, args])</h2>
+						<p>This marks a point, useful to show events triggering than measuring time. Args will show exactly like args do in normal profiling, but as this function marks a timeless event they cannot be changed once the function has been called as it doesn't return anything.
+						<div class="table-responsive my-4">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th scope="col">Parameter</th>
+										<th scope="col">Optional</th>
+										<th scope="col">Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">name</th>
+										<td class="text-center"><i class="fa fa-times-circle"></i></td>
+										<td>Name of the profile, this is so you can identify the profile later in the viewer.</td>
+									</tr>
+									<tr>
+										<th scope="row">scope</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>"p"</code>. It can be set to either "p"(process) or "t" (thread). It's recommended to use process most of the time otherwise it can be hard to identify the mark in the tool. I would suggest using thread when it's an event you don't need to easily identify when looking at the data. See <a class="scrollto" href="#tutorial-marks">Marks</a> for further details.</td>
+									</tr>
+									<tr>
+										<th scope="row">args</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>nil</code>. Args is a flat table of values (string and number types).</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/593fa624fadb75758d0e5def61fd47be.js"></script>
+						</div>
+					</section>
+					</section>
+					<section class="docs-section" id="function-markMemory">
+						<h2 class="section-heading">.markMemory([scope])</h2>
+						<p>This function was added for ease of use to record the current state's memory use. It's recommended only to call this function will delay between frames otherwise it will make it hard to read the data directly. This can be offset somewhat if you use "t"(thread) as the <code>scope</code> parameter.</p>
+						<div class="table-responsive my-4">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th scope="col">Parameter</th>
+										<th scope="col">Optional</th>
+										<th scope="col">Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">scope</th>
+										<td class="text-center"><i class="fa fa-check-circle"></i></td>
+										<td>Defaults to <code>"p"</code> if it isn't set to one of the options. It can be set to either "p"(process) or "t" (thread). It's recommended to use process most of the time otherwise it can be hard to identify the mark in the tool. I would suggest using thread when it's an event you don't need to easily identify when looking at the data. See <a class="scrollto" href="#tutorial-marks">Marks</a> for further details.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<h5>Example</h5>
+						<div class="docs-code-block">
+							<script src="https://gist.github.com/EngineerSmith/b96d30292bc8e18edd9d4240f79ad3ae.js"></script>
+						</div>
+					</section>
+				</article>
+				
+				<footer class="footer"> <!-- Footer to meet the license requirements -->
+				    <div class="container text-center py-5">
+				        <small class="copyright">Template Copyright &copy; <a href="https://themes.3rdwavemedia.com/" target="_blank">3rd Wave Media</a></small>
+				    </div>
+			    </footer>
+		    </div> 
+	    </div>
+    </div>
+       
+    <!-- Javascript -->          
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2.0.5/dist/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <!-- Page Specific JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
+    <script src="assets/js/"> <!-- highlight-custom.js -->
+		//Ref: https://highlightjs.readthedocs.io/en/latest/index.html
+		//Initialise highlight js on <pre></code> blocks
+		hljs.initHighlighting();
+	</script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js"></script>
+    <script> <!-- docs.js -->
+		$(window).on('load resize', function() {
+			//Add/remove class based on browser size when load/resize
+			var w = $(window).width();
+		
+			if(w >= 1200) {
+				// if larger 
+				$('#docs-sidebar').addClass('sidebar-visible').removeClass('sidebar-hidden');
+			} else {
+				// if smaller
+				$('#docs-sidebar').addClass('sidebar-hidden').removeClass('sidebar-visible');
+			}
+		});
+		
+		$(document).ready(function() {
+			/* ====== Toggle Sidebar ======= */
+			$('#docs-sidebar-toggler').on('click', function(){
+				if ( $('#docs-sidebar').hasClass('sidebar-visible') ) {
+					$("#docs-sidebar").removeClass('sidebar-visible').addClass('sidebar-hidden');
+				} else {
+					$("#docs-sidebar").removeClass('sidebar-hidden').addClass('sidebar-visible');
+				}	
+			});
+		
+			/* ====== Activate scrollspy menu ===== */
+			$('body').scrollspy({target: '#docs-nav', offset: 100});
+			
+			/* ===== Smooth scrolling ====== */
+			$('#docs-sidebar a.scrollto').on('click', function(e){
+				//store hash
+				var target = this.hash;    
+				e.preventDefault();
+				$('body').scrollTo(target, 800, {offset: -69, 'axis':'y'});
+				
+				//Collapse sidebar after clicking
+				if ($('#docs-sidebar').hasClass('sidebar-visible') && $(window).width() < 1200){
+					$('#docs-sidebar').removeClass('sidebar-visible').addClass('slidebar-hidden');
+				}
+				
+			});
+			/* wmooth scrolling on page load if URL has a hash */
+			if(window.location.hash) {
+				var urlhash = window.location.hash;
+				$('body').scrollTo(urlhash, 800, {offset: -69, 'axis':'y'});
+			}
+			/* Bootstrap lightbox */
+			/* Ref: http://ashleydw.github.io/lightbox/ */
+			$(document).delegate('*[data-toggle="lightbox"]', 'click', function(e) {
+				e.preventDefault();
+				$(this).ekkoLightbox();
+			}); 
+		});
+	</script>
+</body>
+</html> 

@@ -1,3 +1,6 @@
+local insert = table.insert
+local concat = table.concat
+
 local outputStream = nil
 local profileCount = 0
 
@@ -6,7 +9,7 @@ local function errorOut(msg)
 end
 
 local function validateOutputStream()
-	if not outputStream then
+	if outputStream == nil then
 		errorOut("outputStream is Nil")
 	end
 end
@@ -43,56 +46,59 @@ local function pushBack()
 	profileCount = profileCount + 1
 end
 
-local function tableToJson(tbl)
-	local str = ""
+local function tableToJsonArray(tbl)
+	local str = {}
 	local n = 0
 	for k, v in pairs(tbl) do
-		if n > 0 then str = str .. "," end
+		if n > 0 then insert(str, ",") end
 		n = n + 1
-		str = str .. [["]] .. tostring(k) .. [[":]]
+		insert(str,[["]] .. tostring(k) .. [[":]])
 		if type(v) == "number" then
-			str = str .. tostring(v)
+			insert(str, tostring(v))
 		else
-			str = str .. [["]] .. tostring(v) .. [["]]
+			insert(str, [["]] .. tostring(v) .. [["]])
 		end
 	end
-	return str
+	return concat(str)
 end
 
-local function writeProfile(profile)
+local function writeArgs(args)
+	outputStream:write([[,"args":{]])
+	outputStream:write(tableToJsonArray(args))
+	outputStream:write("}}")
+end
+
+local function writeProfile(profile, threadID)
 	validateOutputStream()
 	pushBack()
 	
-	local str = [[{"cat":"function","dur":]] .. (profile.finish - profile.start) ..
-				[[,"name":"]] .. profile.name:gsub('"','\"') ..
-				[[","ph":"X","pid":0,"tid":0,"ts":]] .. profile.start
-	if profile.id then
-		str = str .. [[,"id":"]] .. tostring(profile.id) .. [["]]
-	end
+	outputStream:write([[{"cat":"function","dur":]], (profile.finish - profile.start))
+	outputStream:write([[,"name":"]], tostring(profile.name:gsub('"','\"')))
+	outputStream:write([[","ph":"X","pid":0,"tid":]], threadID)
+	outputStream:write([[,"ts":]], profile.start)
+	
 	if profile.args then
-		str = str .. [[,"args":{]] .. tableToJson(profile.args) .. "}}"
+		writeArgs(profile.args)
 	else
-		str = str .. "}"
+		outputStream:write("}")
 	end
-	outputStream:write(str)
 	outputStream:flush()
 end
 
-local function writeMark(mark)
+local function writeMark(mark, threadID)
 	validateOutputStream()
 	pushBack()
 	
-	local str = [[{"cat":"mark","name":"]] .. mark.name:gsub('"','\"') ..
-				[[","ph":"i","pid":1,"tid":0,"s":"g","ts":]] .. mark.start
-	if mark.id then
-		str = str .. [[,"id":"]] .. tostring(mark.id) .. [["]]
-	end
+	outputStream:write([[{"cat":"mark","name":"]], tostring(mark.name:gsub('"','\"')))
+	outputStream:write([[","ph":"i","pid":0,"tid":]], threadID)
+	outputStream:write([[,"s":"]], mark.scope)
+	outputStream:write([[","ts":]], mark.start)
+	
 	if mark.args then
-		str = str .. [[,"args":{]] .. tableToJson(mark.args) .. "}}"
+		writeArgs(mark.args)
 	else
-		str = str .. "}"
+		outputStream:write("}")
 	end
-	outputStream:write(str)
 	outputStream:flush()
 end
 

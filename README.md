@@ -1,90 +1,19 @@
 # AppleCake
-Visual Profiling tool for Love2D using Chromium's trace event profiling tool
-
-* [AppleCake Functions](#AppleCake-functions)
-* [Example](#Example)
-* [Viewing the data](#Viewing-AppleCake)
-* [Recovering profiling data](#Crash)
+Visual Profiling tool for Love2D using Chrome's trace tool. AppleCake has been tested and built on Love 11.3
+## Features
+*
+*
+*
+## AppleCake Docs
+You can view the docs at http://EngineerSmith.github.io/AppleCake or open `index.html` locally
 
 ## Installing
 run `git clone https://github.com/EngineerSmith/AppleCake` in your projects lib folder or where you choose
 
-You should be able to pull it into your project by requiring the folder you cloned the repository to, as the repository includes a `init.lua` file.
-If you cloned it to the suggested lib, you would have something similar to `require("lib.AppleCake")()`
+You should be able to pull it into your project by requiring the folder you cloned the repository to, as the repository includes a `init.lua` file. See documentation for further details of how to require AppleCake.
 
-## Usage
-### Require
-First you want to obtain the profiling tool, this will return a function that you're more than likely will call straight away.
-```lua
-local appleCake = require("lib.AppleCake")()
-```
-You can pass in false into this function that is returned if you are wanting to disable the profiling tool. This will save time from trying to pull it out of your project when wanting to release it.
-```lua
-local appleCake = require("lib.AppleCake")(true) -- Default option, that will return AppleCake
-local appleCake = require("lib.AppleCake")(false) -- This option will turn AppleCake off
-```
-**Warning**  You can only set the debug attribute once, then whenever you try to include it again it will return the same table.
-This is so you won't have to tell the library if you're in debug mode repeatively. As long it is the same lua state(not threading)  
-E.g. if you do `require("lib.AppleCake")([true|false])`, then do `require("lib.AppleCake")([true|false])` again or in another file it will return the same table as the first require.
-### AppleCake functions
-#### .beginSession([threaded, filepath])
-This will open a file to allow writing. `filepath` is a optional parameter. You can only have one session active at a time. If called again, it will close the previous session for you. Sessions will overwrite the file if it already exists.
-```lua
-appleCake.beginSession() --Default option will create file "profile.json" in the path the project is ran from on another thread
-appleCake.beginSession(true, "C:/file/path/profileSession.json") --uses threads and writes to given file
-appleCake.beginSession(false) -- Doesn't use threading and writes to default "profile.json"
-```
-#### .endSession()
-This close's the active session, this function needs to be called otherwise the file will not be closed correctly. If in the event of a crash or you didn't end the session, see [Crash](#crash).
-```lua
-appleCake.endSession()
-```
-#### .profile(name, [args, profile])
-This function create's a new profile, or reuses the table passed in. Args is a flat table of named values that are viewable. Args can be changed until `stop` is called. `Args` is nil by default.
-```lua
-local _profile = appleCake.profile("love.update")
-
---Example of reusing profiles to save creating garbage
-local _profile
-local function foo()
-	_profile = appleCake.profile("foo", {num=5}, _profile)
-	--...code
-	_profile.args["value"] = bar - 2
-	_profile:stop()
-end
-```
-#### .profileFunc([args, profile])
-This function create's a new profile for the current function it within by generating a name. It will reuse the table passed in. This will generate the name as "\<function name\>@\<file.lua\>#\<lineNum\>" e.g. `function love.draw` in main.lua on line 24 becomes "draw​@main.lua#24"
-```lua
-local _profile = appleCake.profileFunc()
-
---Example of reusing profiles to save creating garbage
-local _profile
-local function foo()
-	_profile = appleCake.profileFunc({num=5}, _profile)
-	--...code
-	_profile.args.num = 7
-	_profile:stop()
-end
-```
-#### .profile:stop()
-This stops a profile and records the elapsed time since the profile was created. You cannot stop a profile more than once, but can reuse the table by passing it back into AppleCake.
-```lua
-_profile:stop()
-```
-#### .mark(name, [args, id])
-This marks a point, useful to show events triggering than measuring time. Args will show exactly like args do in normal profiling.
-```lua
-appleCake.mark("Loaded assets")
-appleCake.mark("Key pressed", {key="a"})
-```
-#### .markMemory()
-This records the amount of memory the current Lua state is using as a mark.
-```lua
-appleCake.markMemory()
-```
 ## Example
-An example of AppleCake in a love2d project. Example uses underscore infront of profiles, this is not a requirement. It's formatted like this to stop possible clashes with other variables if you're adding it to an exisiting project and to make the variables stand out.
+An example of AppleCake in a love2d project. You can see more examples and how to use AppleCake in [AppleCake Docs](#AppleCake-Docs)
 ```lua
 local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project
 appleCake.beginSession(true) -- Will create "profile.json" next to main.lua by default, and writes on another thread
@@ -141,5 +70,3 @@ end
 Open your Chromium browser of choice (Such as Chrome) and go to [chrome://tracing/](chrome://tracing/). Once the page has loaded, you can drag and drop the `*.json` into the page. This will then load and show you the profiling. You can use the tools to move around and look closer at the data. You can click on sections to see how long a profile took, along with it's name if you don't want to zoom in.  
 Example of one frame from using the code in [Example](###Example).
 ![example](https://i.imgur.com/6SBDkSc.png "Example of chrome tracing")
-## Crash
-If your application crashes or you didn't close the session, it is possible to recover the profiling data. It's setup that chrome://tracing will still accept the file. Use the file as you normally would.
