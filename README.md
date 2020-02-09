@@ -44,7 +44,7 @@ function love.update(dt)
 	loop(100000) -- Example of nested profiling, as the function has it's own profile
 	profileUpdate:stop()
 	
-	if r % 15 == 0 then -- We do it every 30 frames to not clutter our data
+	if r % 15 < 0.1 then -- We do it every 0.5 seconds to not clutter our data
 		appleCake.markMemory() -- Adds mark with details of current Lua memory usage
 	end
 end
