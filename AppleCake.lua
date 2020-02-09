@@ -71,7 +71,7 @@ local function stopProfile(profile)
 	if profile._stopped then
 		errorOut("Attempted to stop and write profile more than once. If attempting to reuse profile, ensure it is passed back into function to reset it's use.")
 	end
-	profile.stop = nil --Can't push functions
+	profile.stop = nil -- Can't push functions
 	commandTbl.command = "write"
 	commandTbl.args = {profile=profile}
 	outStreamChannel:push(commandTbl)
