@@ -47,7 +47,7 @@ local function pushBack()
 end
 
 local function tableToJsonArray(tbl)
-	local str = {"{\"test\":\"hey\","}
+	local str = {"{"}
 	local n = 0
 	for k, v in pairs(tbl) do
 		if n > 0 then insert(str, ",") end
