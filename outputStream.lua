@@ -47,7 +47,7 @@ local function pushBack()
 end
 
 local function tableToJsonArray(tbl)
-	local str = {}
+	local str = {"{\"test\":\"hey\","}
 	local n = 0
 	for k, v in pairs(tbl) do
 		if n > 0 then insert(str, ",") end
@@ -55,17 +55,20 @@ local function tableToJsonArray(tbl)
 		insert(str,[["]] .. tostring(k) .. [[":]])
 		if type(v) == "number" then
 			insert(str, tostring(v))
+		elseif type(v) == "table" then
+			insert(str, tableToJsonArray(v))
 		else
 			insert(str, [["]] .. tostring(v) .. [["]])
 		end
 	end
+	insert(str, "}")
 	return concat(str)
 end
 
 local function writeArgs(args)
-	outputStream:write([[,"args":{]])
+	outputStream:write([[,"args":]])
 	outputStream:write(tableToJsonArray(args))
-	outputStream:write("}}")
+	outputStream:write("}")
 end
 
 local function writeProfile(profile, threadID)

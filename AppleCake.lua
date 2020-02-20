@@ -148,7 +148,7 @@ local AppleCake = {
 		}
 -- Disable AppleCake
 local emptyFunc = function() end -- Used to decrease number of anon empty functions created
-local emptyProfile = {stop=emptyFunc}
+local emptyProfile = {stop=emptyFunc, args={}}
 local AppleCakeRelease = {
 			beginSession = emptyFunc,
 			endSession   = emptyFunc,
