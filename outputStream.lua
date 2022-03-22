@@ -40,7 +40,7 @@ end
 local writeJsonArray
 writeJsonArray = function(tbl)
   local str = { "{" }
-  for k, v in ipairs(tbl) do
+  for k, v in pairs(tbl) do
     insert(str, ([["%s":]]):format(tostring(k)))
     local t = type(v)
     if t == "table" then
@@ -54,7 +54,11 @@ writeJsonArray = function(tbl)
     end
     insert(str, ",")
   end
-  str[#str] = "}"
+  if #str == 1 then
+    str[1] = "{}"
+  else
+    str[#str] = "}"
+  end
   return concat(str)
 end
 
@@ -77,7 +81,7 @@ outputStream.writeMark = function(mark, threadID)
     error("No file opened")
   end
   pushBack()
-  stream:write(([[{"cat":"mark","name":"%s","ph:"i","pid":0,"tid":%d,"s":"%s","ts":%d]]):format(mark.name:gsub('"', '\"'), threadID, mark.scope, mark.start))
+  stream:write(([[{"cat":"mark","name":"%s","ph":"i","pid":0,"tid":%d,"s":"%s","ts":%d]]):format(mark.name:gsub('"', '\"'), threadID, mark.scope, mark.start))
   if mark.args then
     stream:write([[,"args":]])
     stream:write(writeJsonArray(mark.args))
@@ -91,10 +95,10 @@ outputStream.writeCounter = function(counter, threadID)
     error("No file opened")
   end
   pushBack()
-  stream:write(([["cat":"counter","name":"%s","ph":"C","tid":%d, "ts":%d]]):format(counter.name, threadID, counter.start))
+  stream:write(([[{"cat":"counter","name":"%s","ph":"C","pid":0,"tid":%d, "ts":%d]]):format(counter.name, threadID, counter.start))
   if counter.args then
     stream:write([[,"args":]])
-    stream:wrtie(writeJsonArray(counter.args)
+    stream:write(writeJsonArray(counter.args))
   end
   stream:write("}")
   stream:flush()

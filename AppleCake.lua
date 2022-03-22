@@ -125,7 +125,7 @@ return function(active)
       profile.args = args
       profile._stopped = false
       profile.start = getTime()
-      return time
+      return profile
     else
       return {
           profile = true,
@@ -155,7 +155,7 @@ return function(active)
     if profile then
       return AppleCake.profile(profile.name, args, profile)
     end
-    local info = debug.getInfo(2, "fnS")
+    local info = debug.getinfo(2, "fnS")
     if info then
       local name
       if info.name then
