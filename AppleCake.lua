@@ -41,20 +41,40 @@ local function setActiveMode(active)
   end
 end
 
+local AppleCakeEnableLevels = {
+  ["none"]     = 0,
+  ["profiles"] = 1,
+  ["mark"]     = 2,
+  ["counter"]  = 4,
+  ["all"]      = 7,
+}
+
 local emptyFunc = function() end
 local emptyProfile = {stop=emptyFunc, args={}}
 local emptyCounter = { }
 
 local AppleCakeRelease = {
+  isDebug      = false,
+  enableLevels = AppleCakeEnableLevels,
   beginSession = emptyFunc,
   endSession   = emptyFunc,
+  enabled      = emptyFunc,
   profile      = function() return emptyProfile end,
   stopProfile  = emptyFunc,
   profileFunc  = function() return emptyProfile end,
   mark         = emptyFunc,
   counter      = function() return emptyCounter end,
   countMemory  = function() return emptyCounter end,
-  isDebug      = false,
+  -- Added for those who want to convert from jprof
+  jprof = {
+      push     = emptyFunc,
+      pop      = emptyFunc,
+      popAll   = emptyFunc,
+      write    = emptyFunc,
+      enabled  = emptyFunc,
+      connect  = emptyFunc,
+      netFlush = emptyFunc,
+    },
   -- Deprecated
   markMemory   = emptyFunc,
   _stopProfile = emptyFunc,
@@ -73,6 +93,7 @@ return function(active)
   
   AppleCake = {
     isDebug = true,
+    enableLevels = AppleCakeEnableLevels,
   }
   
   local threadID = tonumber(tostring(threadConfig):sub(8)) --Produces a unique consistent id based on memory (if nobody changes require)
@@ -83,7 +104,7 @@ return function(active)
   end
   local _getTime = love.timer.getTime
   local getTime = function() -- Return time in microseconds
-    return _getTime() * 1000000
+    return _getTime() * 1e+6
   end
   
   local thread
@@ -118,8 +139,21 @@ return function(active)
     end
   end
   
+  local profileEnabled = true
+  local markEnabled    = true
+  local counterEnabled = true
+  AppleCake.enabled = function(level)
+    level = level and level:lower() or "all"
+    local levelNum = AppleCakeEnableLevels[level] or AppleCakeEnableLevels["all"]
+    
+    profileEnabled = levelNum/AppleCakeEnableLevels["profile"] % 2 == 1
+    markEnabled    = levelNum/AppleCakeEnableLevels["mark"] % 2 == 1
+    counterEnabled = levelNum/AppleCakeEnableLevels["counter"] % 2 == 1
+  end
+  
   -- Profile a section of code
   AppleCake.profile = function(name, args, profile)
+    if not profileEnabled then return emptyProfile end
     if profile then
       profile.name = name
       profile.args = args
@@ -138,6 +172,7 @@ return function(active)
   
   AppleCake.stopProfile = function(profile)
     profile.finish = getTime()
+    if not profileEnabled then return end
     if profile._stopped then
       error("Attempted to stop and write profile more than once. If attempting to reuse profile, ensure it is passed back into the function which created it to reset it's use")
     end
@@ -153,6 +188,7 @@ return function(active)
   
   -- Profile time taken within a function
   AppleCake.profileFunc = function(args, profile)
+    if not profileEnabled then return emptyProfile end
     if profile then
       return AppleCake.profile(profile.name, args, profile)
     end
@@ -175,6 +211,7 @@ return function(active)
   
   -- Mark an event at a point in time
   AppleCake.mark = function(name, args, scope)
+    if not markEnabled then return end
     if scope == nil or (scope ~= "p" and scope ~= "t") then
       scope = "p"
     end
@@ -182,8 +219,8 @@ return function(active)
     commandTbl[2] = {
         name  = name,
         args  = args,
-        start = getTime(),
         scope = scope,
+        start = getTime(),
       }
     outStream:push(commandTbl)
     commandTbl[2] = nil
@@ -191,6 +228,7 @@ return function(active)
   
   -- Track variable over time
   AppleCake.counter = function(name, args, counter)
+    if not counterEnabled then return end
     commandTbl.command = "writeCounter"
     if counter then
       counter.name  = name
@@ -211,6 +249,7 @@ return function(active)
   
   local memArg, mem = { }, nil
   AppleCake.countMemory = function(option)
+    if not counterEnabled then return end
     if option == "megabyte" then
       memArg.megabytes = collectgarbage("count")/1024
     elseif option == "byte" then
@@ -220,6 +259,44 @@ return function(active)
     end
     mem = AppleCake.counter("Memory usage", memArg, mem)
   end
+  
+  -- jprof functions to allow others to easily intergate profiling into thier already jprof filled code
+  AppleCake.jprof = { }
+  local jprof = AppleCake.jprof
+  
+  -- NOTE: You must at least call appleCake.beginSession() or jprof.START() otherwise it will not be able to write out using these functions
+  jprof.START = AppleCake.beginSession
+  
+  local stack, anno = { }, { }
+  jprof.push = function(name, annotation)
+    anno[1] = annotation -- to avoid creating a new table for each annotation
+    stack[name] = AppleCake.profile(name, anno, stack[name])
+  end
+  
+  jprof.pop = function(name)
+    stack[name]:stop()
+  end
+  
+  jprof.popAll = function()
+    for _, profile in pairs(stack) do
+      if not profile._stopped then
+        profile:stop()
+      end
+    end
+  end
+  
+  jprof.write = function(filename)
+    AppleCake.beginSession(filename) -- will wait for previous session to close
+  end
+  
+  jprof.enabled = function(enabled)
+    AppleCake.enabled(enabled and AppleCakeEnableLevels["all"] or AppleCakeEnableLevels["none"])
+  end
+  
+  local notSupported = function() error ("Sorry this function is not supported in AppleCake right now") end
+  
+  jprof.connect  = notSupported
+  jprof.netFlush = notSupported
   
   --[[ Deprecated functions ]]
   

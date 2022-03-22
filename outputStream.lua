@@ -66,7 +66,7 @@ outputStream.writeProfile = function(threadID, profile)
     error("No file opened")
   end
   pushBack()
-  stream:write(([[{"cat":"function","dur":%d,"name":"%s","ph":"X","pid":0,"tid":%d,"ts":%d]]):format(profile.finish-profile.start, profile.name:gsub('"','\"'), threadID, profile.start))
+  stream:write(([[{"cat":"profile","dur":%d,"name":"%s","ph":"X","pid":0,"tid":%d,"ts":%d]]):format(profile.finish-profile.start, profile.name:gsub('"','\"'), threadID, profile.start))
   if profile.args then
     stream:write([[,"args":]])
     stream:write(writeJsonArray(profile.args))
