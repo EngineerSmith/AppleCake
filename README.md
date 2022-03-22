@@ -1,12 +1,13 @@
 # AppleCake
 Visual Profiling tool for Love2D using Chrome's trace tool. AppleCake has been tested and built on Love 11.3
 ## Features
-* **Profile** how long functions take, with nesting!
+* **Profile** how long functions take, with profile nesting!
 * **Mark** timeless events
+* **Count** map variable changes onto a graph
 * **View Variables** in trace tool as args
-* Profile **Luas memory** usage
+* Profile **Lua memory** usage
 * **Multi-threaded profiling** support
-* **Disable for release**, so you won't have to go through and remove AppleCake
+* **Disable for release** easily
 * Recover **Crashed** data with ease
 ## AppleCake Docs
 You can view the docs at https://EngineerSmith.github.io/AppleCake/ or open the `index.html` locally
@@ -31,20 +32,25 @@ local function loop(count)
   local profileLoop = appleCake.profile("Loop "..count)
   local n = 0
   for i=0,count do
-    n = n + i
+    if i % 10 == 0 then
+      n = n + i
+      appleCake.counter("loop", {n}) -- not best practice; an example of what you can do
+    end
   end
+  appleCake.counter("loop", {0}) -- reset graph to 0 after counting has stopped
   profileLoop:stop()
 end
 
-local r = 0
+local r, mem = 0, 0
 local profileUpdate --Example of reusing profile tables to avoid garbage
 function love.update(dt)
   profileUpdate = appleCake.profileFunc(nil, profileUpdate)
   r = r + 0.5 * dt
   loop(100000) -- Example of nested profiling, as the function has it's own profile
   profileUpdate:stop()
-  if r % 15 < 0.1 then -- We do it every 0.5 seconds to not clutter our data
+  if mem < 0.5 then -- We do it every 0.5 seconds to over strain the system
     appleCake.countMemory() -- Adds counter with details of current Lua memory usage, this becomes a graph
+    mem = 0
   end
 end
 
