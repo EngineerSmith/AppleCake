@@ -54,15 +54,14 @@ writeJsonArray = function(tbl)
     end
     insert(str, ",")
   end
-  if #str == 1 then
-    str[1] = "{}"
-  else
-    str[#str] = "}"
+  if #str == 1 then -- if none added
+    return "{}"
   end
+  str[#str] = "}"
   return concat(str)
 end
 
-outputStream.writeProfile = function(profile, threadID)
+outputStream.writeProfile = function(threadID, profile)
   if not stream then
     error("No file opened")
   end
@@ -76,7 +75,7 @@ outputStream.writeProfile = function(profile, threadID)
   stream:flush()
 end
 
-outputStream.writeMark = function(mark, threadID)
+outputStream.writeMark = function(threadID, mark)
   if not stream then
     error("No file opened")
   end
@@ -90,7 +89,7 @@ outputStream.writeMark = function(mark, threadID)
   stream:flush()
 end
 
-outputStream.writeCounter = function(counter, threadID)
+outputStream.writeCounter = function(threadID, counter)
   if not stream then
     error("No file opened")
   end

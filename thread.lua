@@ -37,15 +37,9 @@ commands["close"] = function(threadID)
   return true
 end
 
-commands["write"] = function(threadID, data)
-  if data.profile then
-    outputStream.writeProfile(data, threadID)
-  elseif data.mark then
-    outputStream.writeMark(data, threadID)
-  elseif data.counter then
-    outputStream.writeCounter(data, threadID)
-  end
-end
+commands["writeProfile"] = outputStream.writeProfile
+commands["writeMark"]    = outputStream.writeMark
+commands["writeCounter"] = outputStream.writeCounter
   
 while true do
   local cmd = out:demand()

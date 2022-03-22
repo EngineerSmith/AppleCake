@@ -128,7 +128,6 @@ return function(active)
       return profile
     else
       return {
-          profile = true,
           name = name,
           args = args,
           stop = AppleCake.stopProfile,
@@ -138,11 +137,13 @@ return function(active)
   end
   
   AppleCake.stopProfile = function(profile)
+    profile.finish = getTime()
     if profile._stopped then
       error("Attempted to stop and write profile more than once. If attempting to reuse profile, ensure it is passed back into the function which created it to reset it's use")
     end
     profile.stop = nil -- Can't push functions
-    profile.finish = getTime()
+    
+    commandTbl.command = "writeProfile"
     commandTbl[2] = profile
     outStream:push(commandTbl)
     commandTbl[2] = nil
@@ -177,11 +178,10 @@ return function(active)
     if scope == nil or (scope ~= "p" and scope ~= "t") then
       scope = "p"
     end
-    commandTbl.command = "write"
+    commandTbl.command = "writeMark"
     commandTbl[2] = {
-        mark = true,
-        name = name,
-        args = args,
+        name  = name,
+        args  = args,
         start = getTime(),
         scope = scope,
       }
@@ -191,14 +191,13 @@ return function(active)
   
   -- Track variable over time
   AppleCake.counter = function(name, args, counter)
-    commandTbl.command = "write"
+    commandTbl.command = "writeCounter"
     if counter then
       counter.name  = name
       counter.args  = args
       counter.start = getTime()
     else
       counter = {
-          counter = true,
           name    = name,
           args    = args,
           start   = getTime(),
