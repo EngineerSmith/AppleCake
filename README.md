@@ -86,8 +86,9 @@ jprof.START() -- takes in filename to know where it should write to
 
 function love.quit()
   jprof.write()
-  -- similar to the orginal, except appleCake needs to open the file from the start to work (see above), so this closes the current file and opens the given file
-  -- Equally, you can call `appleCake.endSession` to close the current file without opening a file
+  -- similar to the orginal, except appleCake needs to open the file from the start to work (see above),
+  -- so this closes the current file and opens the given file.
+  -- You can call `appleCake.endSession` to close the current file without opening a file
 end
 
 local function loop(count)
@@ -116,7 +117,6 @@ end
 
 local lg = love.graphics
 function love.draw()
-  local _profileDraw = appleCake.profileFunc() -- This will create new profile table every time this function is ran
   jprof.push("love.draw")
   lg.push()
   lg.translate(30*math.sqrt(2),30*math.sqrt(2))
