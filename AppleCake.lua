@@ -211,8 +211,14 @@ return function(active)
   end
   
   local memArg, mem = { }, nil
-  AppleCake.countMemory = function()
-    memArg.kilobytes = collectgarbage("count")
+  AppleCake.countMemory = function(option)
+    if option == "megabyte" then
+      memArg.megabytes = collectgarbage("count")/1000
+    elseif option == "byte" then
+      memArg.bytes = collectgarbage("count")*1000
+    else
+      memArg.kilobytes = collectgarbage("count")
+    end
     mem = AppleCake.counter("Memory usage", memArg, mem)
   end
   
