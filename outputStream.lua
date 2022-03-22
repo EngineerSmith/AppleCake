@@ -1,113 +1,103 @@
-local insert = table.insert
-local concat = table.concat
+local outputStream = { }
 
-local outputStream = nil
-local profileCount = 0
+local insert, concat = table.insert, table.concat
 
-local function errorOut(msg)
-	error("Error thrown by AppleCake outputStream\n".. msg)
+local stream
+
+outputStream.open = function(filepath)
+  if stream then
+    outputStream.close()
+  end
+  filepath = filepath or "profile.json"
+  local errorMessage
+  stream, errorMessage = io.open(filepath, "wb")
+  if not stream then
+    error("Could not open file("..tostring(filepath)..")for writing")
+  end
+  stream:write("[")
+  stream:flush()
 end
 
-local function validateOutputStream()
-	if outputStream == nil then
-		errorOut("outputStream is Nil")
-	end
+local shouldPushBack = false
+
+outputStream.close = function(filepath)
+  if not stream then
+    return
+  end
+  stream:write("]")
+  stream:close()
+  stream = nil
+  shouldPushBack = false
 end
 
-local function openStream(filepath)
-	if outputStream then
-		closeStream()
-	end
-	filepath = filepath or "profile.json"
-	local err
-	outputStream, err = io.open(filepath, "wb")
-	if err then errorOut(err) end
-	-- Header
-	outputStream:write("[")
-	outputStream:flush()
+local pushBack = function()
+  if shouldPushBack then
+    stream:write(",")
+  end
+  shouldPushBack = true
 end
 
-local function closeStream()
-	validateOutputStream()
-	
-	-- Footer
-	outputStream:write("]")
-	outputStream:flush()
-	
-	outputStream:close()
-	outputStream = nil
-	profileCount = 0
+local writeJsonArray
+writeJsonArray = function(tbl)
+  local str = { "{" }
+  for k, v in ipairs(tbl) do
+    insert(str, ([["%s":]]):format(tostring(k)))
+    local t = type(v)
+    if t == "table" then
+      insert(str, writeJsonArray(v))
+    elseif t == "number" then
+      insert(str, tostring(v))
+    elseif t == "userdata" and v:typeOf("Data") then
+      insert(str, ([["%s"]]):format(v:getString()))
+    elseif t ~= "userdata" then
+      insert(str, ([["%s"]]):format(tostring(v)))
+    end
+    insert(str, ",")
+  end
+  str[#str] = "}"
+  return concat(str)
 end
 
-local function pushBack()
-	if profileCount > 0 then
-		outputStream:write(",")
-	end
-	profileCount = profileCount + 1
+outputStream.writeProfile = function(profile, threadID)
+  if not stream then
+    error("No file opened")
+  end
+  pushBack()
+  stream:write(([[{"cat":"function","dur":%d,"name":"%s","ph":"X","pid":0,"tid":%d,"ts":%d]]):format(profile.finish-profile.start, profile.name:gsub('"','\"'), threadID, profile.start))
+  if profile.args then
+    stream:write([[,"args":]])
+    stream:write(writeJsonArray(profile.args))
+  end
+  stream:write("}")
+  stream:flush()
 end
 
-local function tableToJsonArray(tbl)
-	local str = {"{"}
-	local n = 0
-	for k, v in pairs(tbl) do
-		if n > 0 then insert(str, ",") end
-		n = n + 1
-		insert(str,[["]] .. tostring(k) .. [[":]])
-		if type(v) == "number" then
-			insert(str, tostring(v))
-		elseif type(v) == "table" then
-			insert(str, tableToJsonArray(v))
-		else
-			insert(str, [["]] .. tostring(v) .. [["]])
-		end
-	end
-	insert(str, "}")
-	return concat(str)
+outputStream.writeMark = function(mark, threadID)
+  if not stream then
+    error("No file opened")
+  end
+  pushBack()
+  stream:write(([[{"cat":"mark","name":"%s","ph:"i","pid":0,"tid":%d,"s":"%s","ts":%d]]):format(mark.name:gsub('"', '\"'), threadID, mark.scope, mark.start))
+  if mark.args then
+    stream:write([[,"args":]])
+    stream:write(writeJsonArray(mark.args))
+  end
+  stream:write("}")
+  stream:flush()
 end
 
-local function writeArgs(args)
-	outputStream:write([[,"args":]])
-	outputStream:write(tableToJsonArray(args))
-	outputStream:write("}")
+outputStream.writeCounter = function(counter, threadID)
+  if not stream then
+    error("No file opened")
+  end
+  pushBack()
+  stream:write(([["cat":"counter","name":"%s","ph":"C","tid":%d, "ts":%d]]):format(counter.name, threadID, counter.start))
+  if counter.args then
+    stream:write([[,"args":]])
+    stream:wrtie(writeJsonArray(counter.args)
+  end
+  stream:write("}")
+  stream:flush()
 end
 
-local function writeProfile(profile, threadID)
-	validateOutputStream()
-	pushBack()
-	
-	outputStream:write([[{"cat":"function","dur":]], (profile.finish - profile.start))
-	outputStream:write([[,"name":"]], tostring(profile.name:gsub('"','\"')))
-	outputStream:write([[","ph":"X","pid":0,"tid":]], threadID)
-	outputStream:write([[,"ts":]], profile.start)
-	
-	if profile.args then
-		writeArgs(profile.args)
-	else
-		outputStream:write("}")
-	end
-	outputStream:flush()
-end
-
-local function writeMark(mark, threadID)
-	validateOutputStream()
-	pushBack()
-	
-	outputStream:write([[{"cat":"mark","name":"]], tostring(mark.name:gsub('"','\"')))
-	outputStream:write([[","ph":"i","pid":0,"tid":]], threadID)
-	outputStream:write([[,"s":"]], mark.scope)
-	outputStream:write([[","ts":]], mark.start)
-	
-	if mark.args then
-		writeArgs(mark.args)
-	else
-		outputStream:write("}")
-	end
-	outputStream:flush()
-end
-
-return {
-	openStream = openStream, 
-	closeStream = closeStream, 
-	writeProfile = writeProfile,
-	writeMark = writeMark,
-}
+return outputStream

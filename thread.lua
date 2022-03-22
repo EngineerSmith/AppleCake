@@ -1,60 +1,56 @@
+local _err = error
+error = function(msg)
+  _err("Error thrown by AppleCake Thread: "..tostring(msg))
+end
+
 local PATH, OWNER = ...
 local outputStream = require(PATH.."outputStream")
+local threadConfig = require(PATH.."threadConfig")
 
-local config = require(PATH.."threadConfig")
-local outStreamChannel = love.thread.getChannel(config.outStreamID)
-local infoChannel = love.thread.getChannel(config.infoID)
+local out  = love.thread.getChannel(threadConfig.outStreamID)
+local info = love.thread.getChannel(threadConfig.infoID)
 
-local function errorOut(msg)
-	error("Error thrown by AppleCake thread\n".. msg)
+local updateOwner = function(channel, owner)
+  local info = channel:pop()
+  info.owner = owner
+  channel:push(info)
 end
 
-local info = infoChannel:peek()
-if info.owner ~= nil then
-	errorOut("Cannot create new outputStream thread due to one already exsiting; owned by thread "..info.owner)
+local commands = { }
+
+commands["open"] = function(threadID, filepath)
+  if info:peek().owner == nil then
+    if OWNER ~= threadID then
+      error("Thread "..threadID.."tried to begin session. Only thread "..OWNER..", that created the outputStream, can begin sessions")
+    end
+    outputStream.open(filepath)
+    info:performAtomic(updateOwner, threadID)
+  end
 end
 
-local exit = false
-
-local function UpdateOwner(owner)
-	local info = infoChannel:pop()
-	info.owner = owner
-	infoChannel:push(info)
+commands["close"] = function(threadID)
+  if OWNER ~= threadID then
+    error("Thread "..threadID.." tried to end session owned by thread "..OWNER)
+  end
+  outputStream.close()
+  info:performAtomic(updateOwner, nil)
+  return true
 end
 
-local function excuteCommand(c)
-	if c.command == "open" then
-		local info = infoChannel:peek()
-		if info.owner == nil then
-			if OWNER == c.threadID then
-				outputStream.openStream(c.args.file)
-				infoChannel:performAtomic(UpdateOwner, OWNER)
-			else
-				errorOut("Thread "..c.threadID.." tried to begin session. Only thread "..OWNER..", that created the outputStream, can begin sessions")
-			end
-		end	
-		return
-	end
-	if c.command == "close" then
-		if OWNER == c.threadID then
-			outputStream.closeStream()
-			infoChannel:performAtomic(UpdateOwner, nil)
-			exit = true
-		else
-			errorOut("Thread "..c.threadID.." tried to end session owned by thread "..OWNER)
-		end
-		return
-	end
-	if c.command == "write" then
-		if c.args.profile then
-			outputStream.writeProfile(c.args.profile, c.threadID)
-		elseif c.args.mark then
-			outputStream.writeMark(c.args.mark, c.threadID)
-		end
-		return
-	end
+commands["write"] = function(threadID, data)
+  if data.profile then
+    outputStream.writeProfile(data, threadID)
+  elseif data.mark then
+    outputStream.writeMark(data, threadID)
+  elseif data.counter then
+    outputStream.writeCounter(data, threadID)
+  end
 end
-
-while not exit do		
-	excuteCommand(outStreamChannel:demand())
+  
+while true do
+  local cmd = out:demand()
+  local fn = commands[cmd.command]
+  if fn and fn(unpack(cmd)) then
+    return
+  end
 end
