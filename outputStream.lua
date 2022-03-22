@@ -95,7 +95,7 @@ outputStream.writeCounter = function(counter, threadID)
     error("No file opened")
   end
   pushBack()
-  stream:write(([[{"cat":"counter","name":"%s","ph":"C","pid":0,"tid":%d, "ts":%d]]):format(counter.name, threadID, counter.start))
+  stream:write(([[{"cat":"counter","name":"%s","ph":"C","pid":0,"tid":%d,"ts":%d]]):format(counter.name, threadID, counter.start))
   if counter.args then
     stream:write([[,"args":]])
     stream:write(writeJsonArray(counter.args))

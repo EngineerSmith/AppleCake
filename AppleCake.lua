@@ -173,7 +173,7 @@ return function(active)
   end
   
   -- Mark an event at a point in time
-  AppleCake.mark = function(name, scope, args)
+  AppleCake.mark = function(name, args, scope)
     if scope == nil or (scope ~= "p" and scope ~= "t") then
       scope = "p"
     end
