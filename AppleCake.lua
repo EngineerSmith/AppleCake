@@ -264,9 +264,13 @@ return function(active)
   AppleCake.jprof = { }
   local jprof = AppleCake.jprof
   
+  -- Custom functions
   -- NOTE: You must at least call appleCake.beginSession() or jprof.START() otherwise it will not be able to write out using these functions
   jprof.START = AppleCake.beginSession
   
+  jprof.COUNTMEMORY = AppleCake.countMemory -- function to count memory, as we don't do it in push
+  
+  -- classic jprof functions
   local stack, anno = { }, { }
   jprof.push = function(name, annotation)
     anno[1] = annotation -- to avoid creating a new table for each annotation
@@ -285,9 +289,7 @@ return function(active)
     end
   end
   
-  jprof.write = function(filename)
-    AppleCake.beginSession(filename) -- will wait for previous session to close
-  end
+  jprof.write = AppleCake.beginSession -- will wait for previous session to close, before reopening
   
   jprof.enabled = function(enabled)
     AppleCake.enabled(enabled and AppleCakeEnableLevels["all"] or AppleCakeEnableLevels["none"])
