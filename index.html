@@ -53,7 +53,9 @@
 <li class=nav-item><a class="nav-link scrollto" href=#function-profile>.profile</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-profileFunc>.profileFunc</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-profile-stop>profile:stop</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#function-profile-stop>.stopProfile</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-mark>.mark</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#function-counter>.counter</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-countMemory>.countMemory</a></li>
 </ul>
 </nav>
@@ -314,8 +316,8 @@ Tip
 <section class=docs-section id=function-profile-stop>
 <h2 class=section-heading>profile:stop()</h2>
 <p>This function can only be called from created profiles. It can only be called once, it has to be passed back into a profile function to reuse it.</p>
-<h5>._stopProfile(profile)</h5>
-<p>This is the same function that is stored in <code>profile.stop</code>. It has been added for ease of access if you wished use it or access it. The underscore is used to show it is a private function. Changing this variable will not change which function profile (created or reuse) call when <code>profile:stop()</code> is called. <code>appleCake._stopProfile(profile)</code></p>
+<h5>.stopProfile(profile)</h5>
+<p>This is the same function that is stored in <code>profile.stop</code>. It has been added for ease of access if you wished use it or access it. <code>appleCake.stopProfile(profile)</code></p>
 <h5>Example</h5>
 <div class=docs-code-block>
 <script src=https://gist.github.com/EngineerSmith/2c21641b8349278194233e9fff1235d8.js></script>
