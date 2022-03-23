@@ -67,7 +67,7 @@ function love.draw()
 end
 
 function love.keypressed(key)
-  appleCake.mark("Key Pressed", {key=key}) -- Adds a mark every time a key is pressed, with the key as an argument
+  appleCake.mark("Key Pressed", "p", {key=key}) -- Adds a mark every time a key is pressed, with the key as an argument
 end
 ```
 ## Viewing AppleCake

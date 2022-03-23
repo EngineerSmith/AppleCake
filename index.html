@@ -54,7 +54,7 @@
 <li class=nav-item><a class="nav-link scrollto" href=#function-profileFunc>.profileFunc</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-profile-stop>profile:stop</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-mark>.mark</a></li>
-<li class=nav-item><a class="nav-link scrollto" href=#function-markMemory>.markMemory</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#function-countMemory>.countMemory</a></li>
 </ul>
 </nav>
 </div>
@@ -357,9 +357,9 @@ Tip
 <script src=https://gist.github.com/EngineerSmith/593fa624fadb75758d0e5def61fd47be.js></script>
 </div>
 </section>
-<section class=docs-section id=function-markMemory>
-<h2 class=section-heading>.markMemory([scope])</h2>
-<p>This function was added for ease of use to record the current state's memory use. It's recommended only to call this function will delay between frames otherwise it will make it hard to read the data directly. This can be offset somewhat if you use "t"(thread) as the <code>scope</code> parameter.</p>
+<section class=docs-section id=function-counter>
+<h2 class=section-heading>.counter(name, [args, counter])</h2>
+<p>This adds a variable that is tracked over time as displays it as a bar graph. The args are what is tracked and maded into a bar graph, if there are multiple arguments then it will overlap the graphs.</p>
 <div class="table-responsive my-4">
 <table class="table table-striped">
 <thead>
@@ -371,9 +371,55 @@ Tip
 </thead>
 <tbody>
 <tr>
-<th scope=row>scope</th>
+<th scope=row>name</th>
+<td class=text-center><i class="fa fa-times-circle"></i></td>
+<td>Name of the counter, this is so you can identify the profile later in the viewer. This must be consisent to see the previous counter calls link together.</td>
+</tr>
+<tr>
+<th scope=row>args</th>
 <td class=text-center><i class="fa fa-check-circle"></i></td>
-<td>Defaults to <code>"p"</code> if it isn't set to one of the options. It can be set to either "p"(process) or "t" (thread). It's recommended to use process most of the time otherwise it can be hard to identify the mark in the tool. I would suggest using thread when it's an event you don't need to easily identify when looking at the data. See <a class=scrollto href=#tutorial-marks>Marks</a> for further details.</td>
+<td>Defaults to <code>nil</code>. Args is a flat table of values (string and number types).</td>
+</tr>
+<tr>
+<tr>
+<th scope=row>counter</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Defaults to <code>nil</code>. Reuse a previous counter, to avoid creating new tables, this is the recommended way to use AppleCake. As the counter is reused instead of regenerating it, you have to pass in the same counter than reusing it for multiple profilesas you won't be able to stop the correct profile then.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/0ec18853fad85848d2de7c59fe0a2596.js></script>
+</div>
+<section class=docs-section id=function-countMemory>
+<h2 class=section-heading>.countMemory([memoryScale])</h2>
+<p>This function uses a <a class=scrollto href=#function-counter>counter</a> to record memory in a graph that can show the growth and change. You can optionally set the output of the scale it uses with the options being <code>"megabyte"</code> or <code>"byte"</code> with the default being <code>"kilobyte"</code></p>
+<div class="callout-block callout-block-warning">
+<div class=content>
+<h4 class=callout-title>
+<span class="callout-icon-holder mr-1"><i class="fas fa-bullhorn"></i></span>
+Warning
+</h4>
+<p>This function replaced the previous <code>.markMemory([scope])</code> which has been deprecated.</p>
+</div>
+</div>
+<div class="table-responsive my-4">
+<table class="table table-striped">
+<thead>
+<tr>
+<th scope=col>Parameter</th>
+<th scope=col>Optional</th>
+<th scope=col>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th scope=row>memoryScale</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Defaults to <code>"kilobyte"</code> if it isn't set to one of the options being <code>"megabyte"</code> or <code>"byte"</code></td>
 </tr>
 </tbody>
 </table>

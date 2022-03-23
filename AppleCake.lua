@@ -210,7 +210,9 @@ return function(active)
   end
   
   -- Mark an event at a point in time
-  AppleCake.mark = function(name, args, scope)
+    -- Scope: "p": process, make a line across the entire process
+    --        "t": thread, make a line across the current thread
+  AppleCake.mark = function(name, scope, args)
     if not markEnabled then return end
     if scope == nil or (scope ~= "p" and scope ~= "t") then
       scope = "p"
@@ -254,7 +256,7 @@ return function(active)
       memArg.megabytes = collectgarbage("count")/1024
     elseif option == "byte" then
       memArg.bytes = collectgarbage("count")*1024
-    else
+    else --kilobyte
       memArg.kilobytes = collectgarbage("count")
     end
     mem = AppleCake.counter("Memory usage", memArg, mem)
