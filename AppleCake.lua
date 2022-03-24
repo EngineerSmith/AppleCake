@@ -24,20 +24,26 @@ local error = function(msg)
   _err("Error thrown by AppleCake: "..tostring(msg))
 end
 
-local isActive = nil -- Used to return the same table as first requested
+local isActive-- Used to return the same table as first requested
+local threadStartIndex -- Used for sorting the thread; sorts by thread started
 
 local function setActiveMode(active)
   if isActive == nil then
-    local i = info:peek()
-    if i then
-      isActive = i.active
-    else
-      if active == nil then
-        active = true
-      end
-      isActive = active
-      info:push({ active = active })
-    end
+    info:performAtomic(function()
+        local i = info:pop()
+        if i then
+          isActive = i.active
+          threadStartIndex = i.threadIndex
+          info:push({ active = isActive, threadIndex = threadStartIndex + 1})
+        else
+          if active == nil then
+            active = true
+          end
+          isActive = active
+          threadStartIndex = 0
+          info:push({ active = active, threadIndex = 1 })
+        end
+      end)
   end
 end
 
@@ -131,6 +137,7 @@ return function(active)
       name = love.filesystem.getIdentity()
     end
     AppleCake.setName(name)
+    AppleCake.setThreadSortIndex(threadStartIndex)
   end
   
   AppleCake.endSession = function()
@@ -151,6 +158,11 @@ return function(active)
   local profileEnabled = true
   local markEnabled    = true
   local counterEnabled = true
+  --[[ Disable logging in an area of code e.g.
+    AppleCake.enabled(AppleCake.enableLevels["none"]) -- Note, it's better to use require("libs.appleCake")(false) to stop logging. This is useful for temp disabling in a section of code
+    AppleCake.enabled(AppleCake.enableLevels["all"])
+    AppleCake.enabled(AppleCake.enableLevels["profile"]+AppleCake.enableLevels["mark"]) -- only allow profiling and marks, disable counters
+  ]]
   AppleCake.enabled = function(level)
     level = level and level:lower() or "all"
     local levelNum = AppleCakeEnableLevels[level] or AppleCakeEnableLevels["all"]
@@ -271,6 +283,7 @@ return function(active)
           process_name = name,
           thread_name  = name,
         })
+      
     end
   end
   
@@ -278,6 +291,17 @@ return function(active)
     if type(name) == "string" then
       pushCommand("writeMetadata", {
           thread_name = name,
+          thread_sort_index = threadStartIndex,
+        })
+    end
+  end
+  
+  -- By default this is the order the threads are created
+  AppleCake.setThreadSortIndex = function(index)
+    if type(index) == "number" then
+      assert(index >= 0, "Given index must be greater than or equal to 0")
+      pushCommand("writeMetadata", {
+          thread_sort_index = index,
         })
     end
   end

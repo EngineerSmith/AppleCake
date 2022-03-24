@@ -103,8 +103,12 @@ outputStream.writeCounter = function(threadID, counter)
   stream:flush()
 end
 
-local jsonMetadata = function(threadID, type, name)
-  stream:write(([[{"name":"%s","ph":"M","pid":0,"tid":%d,"args":{"name":"%s"}}]]):format(type, threadID, name))
+local jsonMetadata = function(threadID, type, arg)
+  if type == "process_name" or type == "thread_name" then
+    stream:write(([[{"name":"%s","ph":"M","pid":0,"tid":%d,"args":{"name":"%s"}}]]):format(type, threadID, arg))
+  elseif type == "thread_sort_index" then
+    stream:write(([[{"name":"%s","ph":"M","pid":0,"tid":%d,"args":{"sort_index":%d}}]]):format(type, threadID, arg))
+  end
 end
 
 outputStream.writeMetadata = function(threadID, metadata)
@@ -113,7 +117,7 @@ outputStream.writeMetadata = function(threadID, metadata)
   end
   pushBack()
   local pb = false
-  for key, name in pairs(metadata) do -- Supported; process_name, thread_name
+  for key, name in pairs(metadata) do -- Supported; process_name, thread_name, thread_sort_index
     if pb then pushBack() end
     jsonMetadata(threadID, key, name)
     stream:flush()
