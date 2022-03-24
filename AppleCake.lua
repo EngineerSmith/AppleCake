@@ -34,15 +34,14 @@ local function setActiveMode(active)
         if i then
           isActive = i.active
           threadStartIndex = i.threadIndex
-          info:push({ active = isActive, threadIndex = threadStartIndex + 1})
         else
           if active == nil then
             active = true
           end
           isActive = active
           threadStartIndex = 0
-          info:push({ active = active, threadIndex = 1 })
         end
+        info:push({ active = isActive, threadIndex = threadStartIndex + 1})
       end)
   end
 end
@@ -60,7 +59,8 @@ local emptyProfile = {stop=emptyFunc, args={}}
 local emptyCounter = { }
 
 local AppleCakeRelease = {
-  isDebug       = false,
+  isDebug       = false, -- Deprecated
+  isActive      = true,  -- Replaced isDebug
   enableLevels  = AppleCakeEnableLevels,
   beginSession  = emptyFunc,
   endSession    = emptyFunc,
@@ -100,7 +100,8 @@ return function(active)
   end
   
   AppleCake = {
-    isDebug = true,
+    isDebug       = false, -- Deprecated
+    isActive      = true,  -- Replaced isDebug
     enableLevels = AppleCakeEnableLevels,
   }
   

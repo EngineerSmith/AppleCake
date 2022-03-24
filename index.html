@@ -8,8 +8,8 @@
 <link rel=icon href=https://i.imgur.com/WAbsvla.png>
 <meta name=description content="AppleCake Love2D Profiler: Documentation">
 <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel=stylesheet>
-<script defer src=https://kit.fontawesome.com/a076d05399.js></script>
-<link rel=stylesheet href=//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.2/styles/atom-one-dark.min.css>
+<script defer src="https://kit.fontawesome.com/a076d05399.js"></script>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.2/styles/atom-one-dark.min.css>
 <link id=theme-style rel=stylesheet href=https://gitcdn.link/repo/EngineerSmith/ffdeeca9a45d62a9a060009110665a6d/raw/09645d508d5ca39cf0d806073edaaae5ac776ab0/theme.css>
 </head>
 <body class=docs-page>
@@ -66,17 +66,19 @@
 <header class=docs-header>
 <h1 class=docs-heading>Introduction</h1>
 <section class=docs-intro>
-<p>AppleCake is a profiler for Love2D. It uses Chrome's trace tool to show you your profiling data. You can get to the tool by going to <code>chrome://tracing</code> or <code>about://tracing</code> (It cannot be linked to for security reasons, but you can highlight and drag to a new tab). You can only access the tool through Chrome! Any version of chrome will have this feature.</p><br/>
+<p>AppleCake is a profiler for Love2D. It uses Chromium's trace tool to show you your profiling data. You can get to the tool by going to <code>about://tracing</code>. You can only access the tool through a Chromium browser! Chrome and Edge have been tested to work.</p><br/>
 <h5>Features</h5>
 <ul>
-<li><strong class=mr-1>Profile</strong> how long code takes</li>
+<li><strong class=mr-1>Profile</strong> how long code takes</li> 
 <li><strong class=mr-1>Nested Profiling</strong>, so you can get more detailed information</li>
 <li><strong class=mr-1>Mark</strong> timeless events when they happen</li>
-<li><strong class=mr-1>View variables</strong> later in the trace tool as args</li>
-<li>Profile <strong class=mr-1>Lua's memory</strong> usage</li>
+<li><strong class=mr-1>Track</strong>variables on a bar graph as they change</li>
+<li><strong class=mr-1>View variables</strong> later in the trace tool</li>
+<li>Profile <strong class=mr-1>Lua's memory</strong> usage in a bar graph format</li>
 <li><strong class=mr-1>Multi-threaded profiling</strong> support</li>
-<li><strong class=mr-1>Disable for release</strong>, so you won't have to go through and remove AppleCake</li>
+<li><strong class=mr-1>Disable for release</strong> easily</li>
 <li>Recover <strong class=mr-1>Crashed</strong> data with ease</li>
+<li>Switch to and from <strong class=mr-1>jprof</strong> easily so you can try AppleCake out in your project</li>
 </li>
 </ul>
 </section>
@@ -103,7 +105,7 @@
 <header class=docs-header>
 <h1 class=docs-heading>Tutorial</h1>
 <section class=docs-intro>
-<p>Tutorials on how to use AppleCake affectively.</p>
+<p>Tutorials on how to use AppleCake effectively.</p>
 </section>
 </header>
 <section class=docs-section id=tutorial-installation>
@@ -123,7 +125,7 @@ Warning
 <p>Be aware that this setting is set across threads, which allows you to require AppleCake in threads without having to set if you're within debug mode. Only the first require ran will set if AppleCake is active or not for all threads. So you can freely do <code>require("AppleCake")()</code> and get the correct table for the first set mode.</p>
 </div>
 </div>
-<p>AppleCake uses less memory and processing when turned off, but any table created to put args into AppleCake profiles or marks will still be active. You can use the variable <code>appleCake.isDebug</code> to find out if AppleCake is active or not if you wish.</p>
+<p>AppleCake uses less memory and processing when turned off, but any table created to put args into AppleCake profiles or marks will still be active. You can use the variable <code>appleCake.isActive</code> to find out if AppleCake is active or not if you wish.</p>
 </section>
 <section class=docs-section id=tutorial-started>
 <h2 class=section-heading>Getting started</h3>
@@ -139,7 +141,11 @@ Warning
 <div class=docs-code-block>
 <script src=https://gist.github.com/EngineerSmith/767f54ea53cbdd876b0a0cc6a0a8a500.js></script>
 </div>
-<p>These are examples of AppleCakes main functionality, check out the individual documentation on each function for further details of their use with more examples.</p>
+<p>Finally, a new feature in AppleCake are counters. These produce a bar graph in the profile viewer to track a variable's change over time</p>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/5b4e3a2c3ee627f2485472f736f23901.js></script>
+</div>
+<p>These are examples of AppleCake's main functionality, check out the individual documentation on each function for further details of their use with more examples.</p>
 </section>
 <section class=docs-section id=tutorial-threading>
 <h2 class=section-heading>Threading</h2>
@@ -150,7 +156,7 @@ Warning
 <span class="callout-icon-holder mr-1"><i class="fas fa-bullhorn"></i></span>
 Warning
 </h4>
-<p>As AppleCake requires <code>love.timer</code>, it will require the module if it isn't loaded; even if AppleCake is disabled.</p>
+<p>As AppleCake requires <code>love.timer</code>, it will require the module if it is enabled; if appleCake is disabled it will not load <code>love.timer</code>.</p>
 </div>
 </div>
 <div class=docs-code-block>
@@ -160,13 +166,13 @@ Warning
 <section class=docs-section id=tutorial-tracing>
 <h2 class=section-heading>Tracing Tool</h2>
 <p>This will try to explain how to use the tracing tool, if you have any questions contact me through Love2D's <a href="https://discord.gg/rhUets9"target=_blank><i class="fas fa-external-link-alt"></i>Discord server</a> (@psmith#4628).</p>
-<p>First you will need to go to <code>chrome://tracing</code> where you can drag the created json into the website. This should read the file and then display it, otherwise it will tell you if there was any problems with the file.</p>
+<p>First you will need to go to <code>about://tracing</code> where you can drag the created JSON into the website. This should read the file and then display it, otherwise it will tell you if there was any problems with the file.</p>
 <h4>Shortcuts</h4>
-<p>It's vital that you learn how to navigate around your data. You can view all the shortcuts by pressing the <code>?</code> in the upper right corner of the page. We will go over how to use certain tools to see more details, but have a play around and learn.</p>
+<p>It's vital that you learn how to navigate around your data. You can view all the shortcuts by pressing the <code>?</code> in the upper right corner of the page or pressing <code>?</code> on your keyboard. We will go over how to use certain tools to see more details, but have a play around and learn.</p>
 <img class="figure-img img-fluid shadow rounded" src=https://i.imgur.com/d4a0mjN.png alt style=width:600px>
 <figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>As you may have a different version, it's recommended to check your own page for shortcuts.</figcaption>
 <h4>Basic View</h4>
-<p>This will be the view once you drop your json into the tracing tool. You can use the first tool to select parts of data, Click and drag over a row(s)<code>Shortcut: 1</code>. This will give a breakdown of what you've selected and how long they took. You can click on the individual names to see all the currently selected ones of that (Not the magnifying glass). You can use this view to then compare args of the selected.</p>
+<p>This will be the view once you drop your JSON into the tracing tool. You can use the first tool to select parts of data, Click and drag over a row(s)<code>Shortcut: 1</code>. This will give a breakdown of what you've selected and how long they took. You can click on the individual names to see all the currently selected ones of that (Not the magnifying glass). You can use this view to then compare args of the selected.</p>
 <div class="callout-block callout-block-info">
 <div class=content>
 <h4 class=callout-title>
@@ -177,23 +183,22 @@ Note
 </div>
 </div>
 <img class="figure-img img-fluid shadow rounded" src=https://i.imgur.com/T3Um9s5.png alt style=width:600px>
-<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses an edited version the example given in <a class=scrollto href=#introduction-example-full>Fully Featured Example</a>.</figcaption>
 <h4 id=tutorial-marks>Marks</h4>
-<p>There are two types of marks, <code>"p"</code> or <code>"t"</code>. <code>"p"</code> will add a line across the graph (Blue circle). While <code>"t"</code> will add a timeless section (Red circle). You will need to click and drag to select Marks unless you have amazing aim.</p>
+<p>There are two types of marks, <code>"p"</code> or <code>"t"</code>. <code>"p"</code> will add a line across the graph (Blue circle). While <code>"t"</code> will add a timeless slice (Red circle). You will need to click and drag to select Marks unless you have amazing aim.</p>
 <img class="figure-img img-fluid shadow rounded" src=https://i.imgur.com/Lix5u12.png alt style=width:600px>
-<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses the example given in <a class=scrollto href=#tutorial-threading>Threading</a>.</figcaption>
 <h4>Zoom</h4>
 <p>You can zoom into a single frame using <code>Shortcut 3</code> and use the previous drag and click tool to select just the profiling data for that frame.</p>
 <img class="figure-img img-fluid shadow rounded" src=https://i.imgur.com/3ldNnYf.png alt style=width:600px>
-<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses the example given in <a class=scrollto href=#introduction-example-full>Fully Featured Example</a>.</figcaption>
 <h4>Args/Graphs</h4>
 <p>You can click any section or mark to view it's arguments, but you can also compare selected items. Once selected, press the <code>Start</code> radio button to get the following view. You can also press <code>Duration</code> to get a break down of how long a profile took.</p>
 <img class="figure-img img-fluid shadow rounded" src=https://i.imgur.com/9m2StLZ.png alt style=width:600px>
-<figcaption class="figure-caption mt-3"><i class="fas fa-info-circle mr-2"></i>This uses an edited version the example given in <a class=scrollto href=#introduction-example-full>Fully Featured Example</a>.</figcaption>
+<h4>Counter</h4>
+<p>You can view the bar graph easily as it is shown as a separate row. Ypu can click on a bar to see it's current value, or select a few to see their values in order.</p>
+<img class="figure-img img-fluid shadow rounded" src=https://i.imgur.com/4zUFK3f.png alt style=width:600px>
 </section>
 <section class=docs-section id=tutorial-crash>
 <h2 class=section-heading>File Recovery</h2>
-<p>You can recover some profiling data even if <code>endSession</code> wasn't called. As AppleCake flushes every time it adds a profile or marker to the data, you can drop it into the tracing tool <code>chrome://tracing</code>. It should be able to read what data has been written, unless the file has become corrupted. It will tell you what is wrong with the file, you might be able to open it and fix the json formatting. The file is just a json array, than a full json format.</p>
+<p>You can recover some profiling data even if <code>endSession</code> wasn't called. As AppleCake flushes every time it adds a profile, marker or counter to the file, you can drop it into the tracing tool <code>about://tracing</code>. It should be able to read what data has been written, unless the file has become corrupted. It will tell you what is wrong with the file, you might be able to open it and fix the JSON formatting yourself. The file is formatted as a JSON array.</p>
 </section>
 </article>
 <article class=docs-article id=functions>
@@ -204,7 +209,7 @@ Note
 </section>
 </header>
 <section class=docs-section id=function-beginSession>
-<h2 class=section-heading>.beginSession([filepath])</h2>
+<h2 class=section-heading>.beginSession([filepath, name])</h2>
 <p>Must be called to start writing profiling to file. Doesn't return anything. Can only be called on the thread that first required AppleCake and only one session can be active at a time.</p>
 <div class="table-responsive my-4">
 <table class="table table-striped">
@@ -221,6 +226,11 @@ Note
 <td class=text-center><i class="fa fa-check-circle"></i></td>
 <td>Defaults to <code>profile.json</code>. It's the filepath to the file you want written to, it will create or overwrite anything in it's place.</td>
 </tr>
+<tr>
+<th scope=row>name</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>this parameter names the process and the current thread. Defaults to the project's identity if it has one. See <a class=scrollto href=#function-setName>.setName</a> for more information</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -231,7 +241,7 @@ Note
 </section>
 <section class=docs-section id=function-endSession>
 <h2 class=section-heading>.endSession()</h2>
-<p>Must be called to close the file correctly. This function ends and waits for it's thread to rejoin. So calling this function can be slow if there are a lot of profiles or marks waiting in the queue, but it will wait until they have all be written before continuing.</p>
+<p>Must be called to close the file correctly. This function ends and waits for it's thread to re-join. So calling this function can be slow if there are a lot of profiles or marks waiting in the queue, but it will wait until they have all be written before continuing.</p>
 <div class="callout-block callout-block-success">
 <div class=content>
 <h4 class=callout-title>
@@ -248,7 +258,7 @@ Tip
 </section>
 <section class=docs-section id=function-profile>
 <h2 class=section-heading>.profile(name, [args, profile])</h2>
-<p>This function creates a new profile table, or reuses the table passed in. Use a <a class=scrollto href=#function-mark>mark</a> to mark timeless events than creating a profile and stopping it instantly</p>
+<p>This function creates a new profile table, or reuses the table passed in. Use a <a class=scrollto href=#function-mark>mark</a> to mark timeless events than creating a profile and stopping it instantly.</p>
 <div class="table-responsive my-4">
 <table class="table table-striped">
 <thead>
@@ -361,7 +371,7 @@ Tip
 </section>
 <section class=docs-section id=function-counter>
 <h2 class=section-heading>.counter(name, [args, counter])</h2>
-<p>This adds a variable that is tracked over time as displays it as a bar graph. The args are what is tracked and maded into a bar graph, if there are multiple arguments then it will overlap the graphs.</p>
+<p>This adds a variable that is tracked over time as displays it as a bar graph. The args are what is tracked and made into a bar graph, if there are multiple arguments then it will overlap the graphs.</p>
 <div class="table-responsive my-4">
 <table class="table table-striped">
 <thead>
@@ -375,7 +385,7 @@ Tip
 <tr>
 <th scope=row>name</th>
 <td class=text-center><i class="fa fa-times-circle"></i></td>
-<td>Name of the counter, this is so you can identify the profile later in the viewer. This must be consisent to see the previous counter calls link together.</td>
+<td>Name of the counter, this is so you can identify the profile later in the viewer. This must be consistent to see the previous counter calls link together.</td>
 </tr>
 <tr>
 <th scope=row>args</th>
@@ -386,7 +396,7 @@ Tip
 <tr>
 <th scope=row>counter</th>
 <td class=text-center><i class="fa fa-check-circle"></i></td>
-<td>Defaults to <code>nil</code>. Reuse a previous counter, to avoid creating new tables, this is the recommended way to use AppleCake. As the counter is reused instead of regenerating it, you have to pass in the same counter than reusing it for multiple profilesas you won't be able to stop the correct profile then.</td>
+<td>Defaults to <code>nil</code>. Reuse a previous counter, to avoid creating new tables, this is the recommended way to use AppleCake. As the counter is reused instead of regenerating it, you have to pass in the same counter than reusing it for multiple profiles as you won't be able to stop the correct profile then.</td>
 </tr>
 </tbody>
 </table>

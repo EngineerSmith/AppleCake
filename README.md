@@ -3,7 +3,7 @@ Visual Profiling tool for Love2D using Chromium's trace tool. AppleCake has been
 ## Features
 * **Profile** how long functions take, with profile nesting!
 * **Mark** timeless events
-* **Count** map variable changes onto a graph
+* **Track** variable changes onto a graph
 * **View Variables** in trace tool as args
 * Profile **Lua memory** usage
 * **Multi-threaded profiling** support
@@ -58,6 +58,7 @@ function love.update(dt)
   r = r + 0.5 * dt
   loop(100000) -- Example of nested profiling, as the function has it's own profile
   profileUpdate:stop()
+  mem = mem + dt
   if mem < 0.5 then -- We do it every 0.5 seconds to over strain the system
     appleCake.countMemory() -- Adds counter with details of current Lua memory usage, this becomes a graph
     mem = 0
