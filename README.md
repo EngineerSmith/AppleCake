@@ -1,5 +1,5 @@
 # AppleCake
-Visual Profiling tool for Love2D using Chrome's trace tool. AppleCake has been tested and built on Love 11.3
+Visual Profiling tool for Love2D using Chromium's trace tool. AppleCake has been tested and built on Love 11.4
 ## Features
 * **Profile** how long functions take, with profile nesting!
 * **Mark** timeless events
@@ -14,7 +14,15 @@ Visual Profiling tool for Love2D using Chrome's trace tool. AppleCake has been t
 You can view the docs at https://EngineerSmith.github.io/AppleCake/ or open the `index.html` locally
 ## Installing
 run `git clone https://github.com/EngineerSmith/AppleCake` in your projects lib folder or where you choose  
-You should be able to pull it into your project by requiring the folder you cloned the repository to, as the repository includes a `init.lua` file. See documentation for further details of how to require AppleCake.
+You should be able to pull it into your project by requiring the folder you cloned the repository to, as the repository includes a `init.lua` file. See documentation for further details of how to require AppleCake correctly.
+```lua
+-- Point of entry, e.g. main.lua
+local appleCake = require("lib.AppleCake")(true)  -- turn on profiling
+local appleCake = require("lib.AppleCake")(false) -- turn off profiling
+
+-- Other files and threads
+local appleCake = require("lib.AppleCake")()      -- get whatever appleCake has been loaded by the first call
+```
 ## Example
 An example of AppleCake in a love2d project. You can see many more examples and how to use AppleCake in [AppleCake Docs](#AppleCake-Docs)
 ```lua
@@ -71,12 +79,14 @@ function love.keypressed(key)
   appleCake.mark("Key Pressed", "p", {key=key}) -- Adds a mark every time a key is pressed, with the key as an argument
 end
 ```
-## Viewing AppleCake
-Open Chrome and go to `chrome://tracing/`. Once the page has loaded, you can drag and drop the created `*.json` into the page. This will then load and show you the profiling data it's recorded. You can use the tools to move around and look closer at the data.  
+## Viewing AppleCake profiling data
+Open your Chromium browser (Chrome and Edge have been tested to work) and go to `about://tracing`. If you don't have a Chromium browser you can go to https://ui.perfetto.dev/v23.0-b574f45ca/assets/catapult_trace_viewer.html and it should work the same.
+
+Once the page has loaded, you can drag and drop the created profile json into the page. This will then load and show you the data. You can use the tools to move around, but it's recommended to use the keyboard shortcuts. Press `?` on your keyboard or in the top right of the page to see the shortcuts.
 Example of a frame of data, see the docs for more examples and details.
 ![example](https://i.imgur.com/6SBDkSc.png "Example of chrome tracing")
 ## Jprof
-To help make it easier to try out or migrate, you can easily use existing jprof calls. Below shows off how, with 2 additional functions to make it fit into AppleCakes workflow
+To help make it easier to try out or migrate, you can easily use existing jprof calls. Below shows off how, with 2 additional functions to make it fit into AppleCake's workflow
 ```lua
 local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project, and all other threads
 
