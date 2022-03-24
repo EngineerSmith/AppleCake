@@ -54,17 +54,19 @@ local emptyProfile = {stop=emptyFunc, args={}}
 local emptyCounter = { }
 
 local AppleCakeRelease = {
-  isDebug      = false,
-  enableLevels = AppleCakeEnableLevels,
-  beginSession = emptyFunc,
-  endSession   = emptyFunc,
-  enabled      = emptyFunc,
-  profile      = function() return emptyProfile end,
-  stopProfile  = emptyFunc,
-  profileFunc  = function() return emptyProfile end,
-  mark         = emptyFunc,
-  counter      = function() return emptyCounter end,
-  countMemory  = function() return emptyCounter end,
+  isDebug       = false,
+  enableLevels  = AppleCakeEnableLevels,
+  beginSession  = emptyFunc,
+  endSession    = emptyFunc,
+  enabled       = emptyFunc,
+  profile       = function() return emptyProfile end,
+  stopProfile   = emptyFunc,
+  profileFunc   = function() return emptyProfile end,
+  mark          = emptyFunc,
+  counter       = function() return emptyCounter end,
+  countMemory   = function() return emptyCounter end,
+  setName       = emptyFunc,
+  setThreadName = emptyFunc,
   -- Added for those who want to convert from jprof
   jprof = {
       push     = emptyFunc,
@@ -110,25 +112,32 @@ return function(active)
   local thread
   local outStream = love.thread.getChannel(threadConfig.outStreamID)
   
-  AppleCake.beginSession = function(filepath)
+  local pushCommand = function(command, arg)
+    commandTbl.command = command
+    commandTbl[2] = arg
+    outStream:push(commandTbl)
+    commandTbl[2] = nil
+  end
+  
+  AppleCake.beginSession = function(filepath, name)
     if thread then
       AppleCake.endSession()
     else
       thread = lt.newThread(dirPATH.."thread.lua")
     end
-    commandTbl.command = "open"
-    commandTbl[2] = filepath
-    outStream:push(commandTbl)
-    commandTbl[2] = nil
+    pushCommand("open", filepath)
     thread:start(PATH, threadID)
+    if not name then
+      name = love.filesystem.getIdentity()
+    end
+    AppleCake.setName(name)
   end
   
   AppleCake.endSession = function()
     if thread and thread:isRunning() then
       outStream:performAtomic(function()
           outStream:clear()
-          commandTbl.command = "close"
-          outStream:push(commandTbl)
+          pushCommand("close")
         end)
       thread:wait()
     else
@@ -178,10 +187,8 @@ return function(active)
     end
     profile.stop = nil -- Can't push functions
     
-    commandTbl.command = "writeProfile"
-    commandTbl[2] = profile
-    outStream:push(commandTbl)
-    commandTbl[2] = nil
+    pushCommand("writeProfile", profile)
+    
     profile.stop = AppleCake.stopProfile
     profile._stopped = true
   end
@@ -217,15 +224,12 @@ return function(active)
     if scope == nil or (scope ~= "p" and scope ~= "t") then
       scope = "p"
     end
-    commandTbl.command = "writeMark"
-    commandTbl[2] = {
+    pushCommand("writeMark", {
         name  = name,
         args  = args,
         scope = scope,
         start = getTime(),
-      }
-    outStream:push(commandTbl)
-    commandTbl[2] = nil
+      })
   end
   
   -- Track variable over time
@@ -243,9 +247,7 @@ return function(active)
           start   = getTime(),
         }
     end
-    commandTbl[2] = counter
-    outStream:push(commandTbl)
-    commandTbl[2] = nil
+    pushCommand("writeCounter", counter)
     return counter
   end
   
@@ -260,6 +262,24 @@ return function(active)
       memArg.kilobytes = collectgarbage("count")
     end
     mem = AppleCake.counter("Memory usage", memArg, mem)
+  end
+  
+  -- Set the name of the process, usually your projects name, or identity
+  AppleCake.setName = function(name)
+    if type(name) == "string" then
+      pushCommand("writeMetadata", {
+          process_name = name,
+          thread_name  = name,
+        })
+    end
+  end
+  
+  AppleCake.setThreadName = function(name)
+    if type(name) == "string" then
+      pushCommand("writeMetadata", {
+          thread_name = name,
+        })
+    end
   end
   
   -- jprof functions to allow others to easily intergate profiling into thier already jprof filled code

@@ -37,9 +37,10 @@ commands["close"] = function(threadID)
   return true
 end
 
-commands["writeProfile"] = outputStream.writeProfile
-commands["writeMark"]    = outputStream.writeMark
-commands["writeCounter"] = outputStream.writeCounter
+commands["writeProfile"]  = outputStream.writeProfile
+commands["writeMark"]     = outputStream.writeMark
+commands["writeCounter"]  = outputStream.writeCounter
+commands["writeMetadata"] = outputStream.writeMetadata
   
 while true do
   local cmd = out:demand()

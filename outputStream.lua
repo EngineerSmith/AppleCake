@@ -103,4 +103,22 @@ outputStream.writeCounter = function(threadID, counter)
   stream:flush()
 end
 
+local jsonMetadata = function(threadID, type, name)
+  stream:write(([[{"name":"%s","ph":"M","pid":0,"tid":%d,"args":{"name":"%s"}}]]):format(type, threadID, name))
+end
+
+outputStream.writeMetadata = function(threadID, metadata)
+  if not stream then
+    error("No file opened")
+  end
+  pushBack()
+  local pb = false
+  for key, name in pairs(metadata) do -- Supported; process_name, thread_name
+    if pb then pushBack() end
+    jsonMetadata(threadID, key, name)
+    stream:flush()
+    pb = true
+  end
+end
+
 return outputStream
