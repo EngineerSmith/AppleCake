@@ -282,6 +282,7 @@ return function(active)
       pushCommand("writeMetadata", {
           process_name = name,
           thread_name  = name,
+          thread_sort_index = threadStartIndex, -- set within main function to activate appleCake
         })
       
     end
@@ -291,7 +292,7 @@ return function(active)
     if type(name) == "string" then
       pushCommand("writeMetadata", {
           thread_name = name,
-          thread_sort_index = threadStartIndex,
+          thread_sort_index = threadStartIndex, -- set within main function to activate appleCake
         })
     end
   end
