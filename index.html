@@ -57,6 +57,8 @@
 <li class=nav-item><a class="nav-link scrollto" href=#function-mark>.mark</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-counter>.counter</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-countMemory>.countMemory</a></li>
+<li class="nav-item section-title"><a class="nav-link scrollto active" href=#jprof><span class="theme-icon-holder mr-2"><i class="fas fa-cogs"></i></span>jprof</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-push>.jprof.push</a></li>
 </ul>
 </nav>
 </div>
@@ -439,6 +441,78 @@ Warning
 <h5>Example</h5>
 <div class=docs-code-block>
 <script src=https://gist.github.com/EngineerSmith/b96d30292bc8e18edd9d4240f79ad3ae.js></script>
+</div>
+</section>
+</article>
+<article class=docs-article id=jprof>
+<header class=docs-header>
+<h1 class=docs-heading>jprof</h1>
+<section class=docs-intro>
+<p>Documentation on functions available in AppleCake that match the jprof API.</p>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/a8cfe75f8ab89b1a4484ff2d9afcdc72.js></script>
+</div>
+</section>
+</header>
+<section class=docs-section id=jprof-push>
+<h2 class=section-heading>.jprof.push(name, [annotation])</h2>
+<p>To fit AppleCake's workflow, annotations are treated the same as args in <a class=scrollto href=#function-profile>.profile</a>. AppleCake does not cache the profile tables for you, so you may notice additional memory usage.</p>
+<div class="table-responsive my-4">
+<table class="table table-striped">
+<thead>
+<tr>
+<th scope=col>Parameter</th>
+<th scope=col>Optional</th>
+<th scope=col>Description</th>
+</tr>
+</thead>
+<tbody>
+<th scope=row>name</th>
+<td class=text-center><i class="fa fa-times-circle"></i></td>
+<td>Name of the profile, this is so you can identify the profile later in the viewer.</td>
+</tr>
+<tr>
+<th scope=row>annotation</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Defaults to <code>nil</code>. Annotation is a value (string, number, table types). That can be later viewed in the profiling data.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/7050bf13114acd498b4e1c43db823286.js></script>
+</div>
+</section>
+<section class=docs-section id=jprof-pop>
+<h2 class=section-heading>.jprof.pop(name)</h2>
+<p>To fit AppleCake's workflow, annotations are treated the same as args in <a class=scrollto href=#function-profile>.profile</a>. AppleCake automatically caches profile tables for you inorder to stay performent with AppleCake's style.</p>
+<div class="table-responsive my-4">
+<table class="table table-striped">
+<thead>
+<tr>
+<th scope=col>Parameter</th>
+<th scope=col>Optional</th>
+<th scope=col>Description</th>
+</tr>
+</thead>
+<tbody>
+<th scope=row>name</th>
+<td class=text-center><i class="fa fa-times-circle"></i></td>
+<td>Name of the profile, this is so you can identify the profile later in the viewer.</td>
+</tr>
+<tr>
+<th scope=row>annotation</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Defaults to <code>nil</code>. Annotation is a value (string, number, table types). That can be later viewed in the profiling data.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/7050bf13114acd498b4e1c43db823286.js></script>
 </div>
 </section>
 </article>

@@ -322,19 +322,25 @@ return function(active)
   local stack, anno = { }, { }
   jprof.push = function(name, annotation)
     anno[1] = annotation -- to avoid creating a new table for each annotation
-    stack[name] = AppleCake.profile(name, anno, stack[name])
+    table.insert(stack, AppleCake.profile(name, anno, stack[name]))
   end
   
   jprof.pop = function(name)
-    stack[name]:stop()
+    local head = stack[#stack]
+    if name then
+      assert(name == head.name, ("(appleCake.jprof) Top of zone stack, does not match the zone passed to appleCake.jprof.pop ('%s', on top: '%s')!"):format(name, stack[#stack]) -- Error message taken from jprof
+    end
+    head:stop()
+    stack[#stack] = nil
   end
   
   jprof.popAll = function()
-    for _, profile in pairs(stack) do
-      if not profile._stopped then
-        profile:stop()
+    for i=#stack, 1, -1 do
+      if not stack[i]._stopped then
+        stack[i]:stop()
       end
     end
+    stack = { }
   end
   
   jprof.write = AppleCake.beginSession -- will wait for previous session to close, before reopening
