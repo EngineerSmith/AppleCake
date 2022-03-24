@@ -20,6 +20,7 @@ An example of AppleCake in a love2d project. You can see many more examples and 
 ```lua
 local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project
 appleCake.beginSession() --Will write to "profile.json" by default
+appleCake.setName("Example")
 
 function love.quit()
   appleCake.endSession() -- Close the session when the program ends
@@ -75,9 +76,9 @@ Open Chrome and go to `chrome://tracing/`. Once the page has loaded, you can dra
 Example of a frame of data, see the docs for more examples and details.
 ![example](https://i.imgur.com/6SBDkSc.png "Example of chrome tracing")
 ## Jprof
-To help make it easier to try out or migrate, you can easily use existing jprof calls. Below shows off how, with 2 additional functions to make it fit into AppleCakes workflow capitalized to show their seperation from usualu jprof calls
+To help make it easier to try out or migrate, you can easily use existing jprof calls. Below shows off how, with 2 additional functions to make it fit into AppleCakes workflow
 ```lua
-local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project
+local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project, and all other threads
 
 local jprof = appleCake.jprof
 -- One of the different function from normal jprof
@@ -86,9 +87,9 @@ jprof.START() -- takes in filename to know where it should write to
 
 function love.quit()
   jprof.write()
-  -- similar to the orginal, except appleCake needs to open the file from the start to work (see above),
-  -- so this closes the current file and opens the given file.
-  -- You can call `appleCake.endSession` to close the current file without opening a file
+  -- similar to the orginal, except appleCake needs an open file from the start to work (see above),
+  -- so this closes the current file and opens the given file to start writing to
+  -- You can call `appleCake.endSession` to close the current file without opening a file again
 end
 
 local function loop(count)
@@ -103,15 +104,15 @@ local function loop(count)
 end
 
 local r = 0
-local profileUpdate --Example of reusing profile tables to avoid garbage
 function love.update(dt)
   jprof.push("frame")
   jprof.push("love.update")
   r = r + 0.5 * dt
-  loop(100000) -- Example of nested profiling, as the function has it's own profile
+  loop(100000)
   
   jprof.COUNTMEMORY() -- tracks memory; as we don't track memory each time push is called like jprof
   -- renamed function from appleCake.countMemory
+  -- Recommended to count memory only every few frames to decrease file size of the resulting profiled session
   jprof.pop("love.update")
 end
 
