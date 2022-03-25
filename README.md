@@ -11,7 +11,7 @@ Visual Profiling tool for Love2D using Chromium's trace tool. AppleCake has been
 * Recover **Crashed** data with ease
 * Switch to and from **jprof** easily so you can try it out on your project
 ## AppleCake Docs
-You can view the docs at https://EngineerSmith.github.io/AppleCake/ or open the `index.html` locally
+You can view the docs at https://engineersmith.github.io/AppleCake-Docs/ or open the `index.html` locally from that repo
 ## Installing
 run `git clone https://github.com/EngineerSmith/AppleCake` in your projects lib folder or where you choose  
 You should be able to pull it into your project by requiring the folder you cloned the repository to, as the repository includes a `init.lua` file. See documentation for further details of how to require AppleCake correctly.
