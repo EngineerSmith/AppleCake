@@ -7,10 +7,10 @@
 <meta name=viewport content="width=device-width, initial-scale=1.0">
 <link rel=icon href=https://i.imgur.com/WAbsvla.png>
 <meta name=description content="AppleCake Love2D Profiler: Documentation">
-<link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel=stylesheet>
-<script defer src="https://kit.fontawesome.com/a076d05399.js"></script>
+<link href=https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap rel=stylesheet>
+<script defer src=https://kit.fontawesome.com/a076d05399.js></script>
 <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.2/styles/atom-one-dark.min.css>
-<link id=theme-style rel=stylesheet href=https://gitcdn.link/repo/EngineerSmith/ffdeeca9a45d62a9a060009110665a6d/raw/09645d508d5ca39cf0d806073edaaae5ac776ab0/theme.css>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css integrity=sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T crossorigin=anonymous>
 </head>
 <body class=docs-page>
 <header class="header fixed-top">
@@ -50,6 +50,7 @@
 <li class="nav-item section-title"><a class="nav-link scrollto active" href=#functions><span class="theme-icon-holder mr-2"><i class="fas fa-cogs"></i></span>Functions</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-beginSession>.beginSession</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-endSession>.endSession</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#function-enable>.enable</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-profile>.profile</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-profileFunc>.profileFunc</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#function-profile-stop>profile:stop</a></li>
@@ -59,6 +60,14 @@
 <li class=nav-item><a class="nav-link scrollto" href=#function-countMemory>.countMemory</a></li>
 <li class="nav-item section-title"><a class="nav-link scrollto active" href=#jprof><span class="theme-icon-holder mr-2"><i class="fas fa-cogs"></i></span>jprof</a></li>
 <li class=nav-item><a class="nav-link scrollto" href=#jprof-push>.jprof.push</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-pop>.jprof.pop</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-popAll>.jprof.popAll</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-write>.jprof.write</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-enabled>.jprof.enabled</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-connect>.jprof.connect</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-netFlush>.jprof.netFlush</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-START>.jprof.START</a></li>
+<li class=nav-item><a class="nav-link scrollto" href=#jprof-COUNTMEMORY>.jprof.COUNTMEMORY</a></li>
 </ul>
 </nav>
 </div>
@@ -71,7 +80,7 @@
 <p>AppleCake is a profiler for Love2D. It uses Chromium's trace tool to show you your profiling data. You can get to the tool by going to <code>about://tracing</code>. You can only access the tool through a Chromium browser! Chrome and Edge have been tested to work.</p><br/>
 <h5>Features</h5>
 <ul>
-<li><strong class=mr-1>Profile</strong> how long code takes</li> 
+<li><strong class=mr-1>Profile</strong> how long code takes</li>
 <li><strong class=mr-1>Nested Profiling</strong>, so you can get more detailed information</li>
 <li><strong class=mr-1>Mark</strong> timeless events when they happen</li>
 <li><strong class=mr-1>Track</strong>variables on a bar graph as they change</li>
@@ -256,6 +265,32 @@ Tip
 <h5>Example</h5>
 <div class=docs-code-block>
 <script src=https://gist.github.com/EngineerSmith/5321e9d7ec10b9e7caf28676203954bc.js></script>
+</div>
+</section>
+<section class=docs-section id=function-enable>
+<h2 class=section-heading>.enable([levels])</h2>
+<p>By default this function will enable everything. You can use this function to fine tune what to disable, or disable everything.</p>
+<div class="table-responsive my-4">
+<table class="table table-striped">
+<thead>
+<tr>
+<th scope=col>Parameter</th>
+<th scope=col>Optional</th>
+<th scope=col>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th scope=row>levels</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Defaults to "all", which will enable everything. Options: <code>"all"</code>, <code>"none"</code>, <code>"profile"</code>, <code>"mark"</code>, or <code>"counter"</code>. These Options will enable the one you select. You can pick multiple as shown in the example.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/8e9073bb991c10cbb6fcd9474e3f22d4.js></script>
 </div>
 </section>
 <section class=docs-section id=function-profile>
@@ -486,8 +521,8 @@ Warning
 </div>
 </section>
 <section class=docs-section id=jprof-pop>
-<h2 class=section-heading>.jprof.pop(name)</h2>
-<p>To fit AppleCake's workflow, annotations are treated the same as args in <a class=scrollto href=#function-profile>.profile</a>. AppleCake automatically caches profile tables for you inorder to stay performent with AppleCake's style.</p>
+<h2 class=section-heading>.jprof.pop([name])</h2>
+<p>Pop the current profile from the stack. Acts the same as jprof as if you provide it with a name, it will check the name against the current head of the stack.</p>
 <div class="table-responsive my-4">
 <table class="table table-striped">
 <thead>
@@ -499,21 +534,87 @@ Warning
 </thead>
 <tbody>
 <th scope=row>name</th>
-<td class=text-center><i class="fa fa-times-circle"></i></td>
-<td>Name of the profile, this is so you can identify the profile later in the viewer.</td>
-</tr>
-<tr>
-<th scope=row>annotation</th>
 <td class=text-center><i class="fa fa-check-circle"></i></td>
-<td>Defaults to <code>nil</code>. Annotation is a value (string, number, table types). That can be later viewed in the profiling data.</td>
+<td>Name of the profile, so that you know you're popping the correct profile.</td>
 </tr>
 </tbody>
 </table>
 </div>
 <h5>Example</h5>
 <div class=docs-code-block>
-<script src=https://gist.github.com/EngineerSmith/7050bf13114acd498b4e1c43db823286.js></script>
+<script src=https://gist.github.com/EngineerSmith/371358a2157af20133be26b248b4f329.js></script>
 </div>
+</section>
+<section class=docs-section id=jprof-popAll>
+<h2 class=section-heading>.jprof.popAll()</h2>
+<p>Pops all the current profile from the stack. Acts as expected; the same as jprof.</p>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/00971a28d9f9fca117aa8089b347fd13.js></script>
+</div>
+</section>
+<section class=docs-section id=jprof-write>
+<h2 class=section-heading>.jprof.write([filename])</h2>
+<p>This function acts a little differently due to appleCake's workflow of always having the file open. This function will close the current open file (if open) and then open the new file with the given filename. If no filename is given, it will default to <code>profile.json</code></p>
+<div class="table-responsive my-4">
+<table class="table table-striped">
+<thead>
+<tr>
+<th scope=col>Parameter</th>
+<th scope=col>Optional</th>
+<th scope=col>Description</th>
+</tr>
+</thead>
+<tbody>
+<th scope=row>filename</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Name of the file to write to open and write to.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/5630cf8540e5e14235194ad39a0dd4a1.js></script>
+</div>
+</section>
+<section class=docs-section id=jprof-enabled>
+<h2 class=section-heading>.jprof.enabled(enabled)</h2>
+<p>Enables or disables profiling after this point.</p>
+<div class="table-responsive my-4">
+<table class="table table-striped">
+<thead>
+<tr>
+<th scope=col>Parameter</th>
+<th scope=col>Optional</th>
+<th scope=col>Description</th>
+</tr>
+</thead>
+<tbody>
+<th scope=row>name</th>
+<td class=text-center><i class="fa fa-check-circle"></i></td>
+<td>Name of the profile, so that you know you're popping the correct profile.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5>Example</h5>
+<div class=docs-code-block>
+<script src=https://gist.github.com/EngineerSmith/371358a2157af20133be26b248b4f329.js></script>
+</div>
+</section>
+<section id=jprog-connect></section>
+<section class=docs-section id=jprof-netFlush>
+<h2 class=section-heading>.jprof.connect() / .jprog.netFlush()</h2>
+<p>These functions are not supported at all within AppleCake and will throw an error if used.</p>
+</section>
+<section class=docs-section id=jprof-START>
+<h2 class=section-heading>.jprof.START([filename, name])</h2>
+<p>Same function as <a class=scrollto href=#function-beginSession>.beginSession</a>. For your conveniences it was added to the jprof table.</p>
+</section>
+<section class=docs-section id=jprof-COUNTMEMORY>
+<h2 class=section-heading>.jprof.COUNTMEMORY([memoryScale])</h2>
+<p>Same function as <a class=scrollto href=#function-countMemory>.countMemory</a>. For your conveniences it was added to the jprof table.</p>
 </section>
 </article>
 <footer class=footer>
@@ -530,6 +631,6 @@ Warning
 <script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js></script>
-<script>$(window).on("load resize",function(){var a=$(window).width();if(a>=1200){$("#docs-sidebar").addClass("sidebar-visible").removeClass("sidebar-hidden")}else{$("#docs-sidebar").addClass("sidebar-hidden").removeClass("sidebar-visible")}});$(document).ready(function(){$("#docs-sidebar-toggler").on("click",function(){if($("#docs-sidebar").hasClass("sidebar-visible")){$("#docs-sidebar").removeClass("sidebar-visible").addClass("sidebar-hidden")}else{$("#docs-sidebar").removeClass("sidebar-hidden").addClass("sidebar-visible")}});$("body").scrollspy({target:"#docs-nav",offset:100});$("#docs-sidebar a.scrollto").on("click",function(c){var b=this.hash;c.preventDefault();$("body").scrollTo(b,800,{offset:-69,axis:"y"});if($("#docs-sidebar").hasClass("sidebar-visible")&&$(window).width()<1200){$("#docs-sidebar").removeClass("sidebar-visible").addClass("slidebar-hidden")}});if(window.location.hash){var a=window.location.hash;$("body").scrollTo(a,800,{offset:-69,axis:"y"})}$(document).delegate('*[data-toggle="lightbox"]',"click",function(b){b.preventDefault();$(this).ekkoLightbox()})});</script>
+<script>$(window).on("load resize",function(){var b=$(window).width();if(b>=1200){$("#docs-sidebar").addClass("sidebar-visible").removeClass("sidebar-hidden")}else{$("#docs-sidebar").addClass("sidebar-hidden").removeClass("sidebar-visible")}});$(document).ready(function(){$("#docs-sidebar-toggler").on("click",function(){if($("#docs-sidebar").hasClass("sidebar-visible")){$("#docs-sidebar").removeClass("sidebar-visible").addClass("sidebar-hidden")}else{$("#docs-sidebar").removeClass("sidebar-hidden").addClass("sidebar-visible")}});$("body").scrollspy({target:"#docs-nav",offset:100});$("#docs-sidebar a.scrollto").on("click",function(d){var a=this.hash;d.preventDefault();$("body").scrollTo(a,800,{offset:-69,axis:"y"});if($("#docs-sidebar").hasClass("sidebar-visible")&&$(window).width()<1200){$("#docs-sidebar").removeClass("sidebar-visible").addClass("slidebar-hidden")}});if(window.location.hash){var b=window.location.hash;$("body").scrollTo(b,800,{offset:-69,axis:"y"})}$(document).delegate('*[data-toggle="lightbox"]',"click",function(a){a.preventDefault();$(this).ekkoLightbox()})});</script>
 </body>
 </html>

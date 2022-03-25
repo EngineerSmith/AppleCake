@@ -164,9 +164,11 @@ return function(active)
     AppleCake.enabled(AppleCake.enableLevels["all"])
     AppleCake.enabled(AppleCake.enableLevels["profile"]+AppleCake.enableLevels["mark"]) -- only allow profiling and marks, disable counters
   ]]
-  AppleCake.enabled = function(level)
-    level = level and level:lower() or "all"
-    local levelNum = AppleCakeEnableLevels[level] or AppleCakeEnableLevels["all"]
+  AppleCake.enable = function(level)
+    if type(level) ~= "number" then
+      level = level and level:lower() or "all"
+      level = AppleCakeEnableLevels[level] or AppleCakeEnableLevels["all"]
+    end
     
     profileEnabled = levelNum/AppleCakeEnableLevels["profile"] % 2 == 1
     markEnabled    = levelNum/AppleCakeEnableLevels["mark"] % 2 == 1
@@ -346,10 +348,10 @@ return function(active)
   jprof.write = AppleCake.beginSession -- will wait for previous session to close, before reopening
   
   jprof.enabled = function(enabled)
-    AppleCake.enabled(enabled and AppleCakeEnableLevels["all"] or AppleCakeEnableLevels["none"])
+    AppleCake.enable(enabled and AppleCakeEnableLevels["all"] or AppleCakeEnableLevels["none"])
   end
   
-  local notSupported = function() error ("Sorry this function is not supported in AppleCake right now") end
+  local notSupported = function() error("Sorry this function is not supported in AppleCake right now") end
   
   jprof.connect  = notSupported
   jprof.netFlush = notSupported
