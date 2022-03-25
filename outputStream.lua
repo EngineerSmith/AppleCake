@@ -12,7 +12,7 @@ outputStream.open = function(filepath)
   end
   filepath = filepath or "profile.json"
   local errorMessage
-  stream, errorMessage = lfs.open(filepath, "w")
+  stream, errorMessage = lfs.newFile(filepath, "w")
   if not stream then
     error("Could not open file("..tostring(filepath)..")for writing")
   end

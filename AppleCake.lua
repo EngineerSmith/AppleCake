@@ -330,7 +330,7 @@ return function(active)
   jprof.pop = function(name)
     local head = stack[#stack]
     if name then
-      assert(name == head.name, ("(appleCake.jprof) Top of zone stack, does not match the zone passed to appleCake.jprof.pop ('%s', on top: '%s')!"):format(name, stack[#stack]) -- Error message taken from jprof
+      assert(name == head.name, ("(appleCake.jprof) Top of zone stack, does not match the zone passed to appleCake.jprof.pop ('%s', on top: '%s')!"):format(name, stack[#stack])) -- Error message taken from jprof
     end
     head:stop()
     stack[#stack] = nil
