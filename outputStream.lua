@@ -1,8 +1,10 @@
 local outputStream = { }
 
+local lfs = love.filesystem or require("love.filesystem")
 local insert, concat = table.insert, table.concat
 
 local stream
+local flush
 
 outputStream.open = function(filepath)
   if stream then
@@ -10,12 +12,12 @@ outputStream.open = function(filepath)
   end
   filepath = filepath or "profile.json"
   local errorMessage
-  stream, errorMessage = io.open(filepath, "wb")
+  stream, errorMessage = lfs.open(filepath, "w")
   if not stream then
     error("Could not open file("..tostring(filepath)..")for writing")
   end
+  flush = stream:setBuffer("none")
   stream:write("[")
-  stream:flush()
 end
 
 local shouldPushBack = false
@@ -72,7 +74,9 @@ outputStream.writeProfile = function(threadID, profile)
     stream:write(writeJsonArray(profile.args))
   end
   stream:write("}")
-  stream:flush()
+  if flush then
+    stream:flush()
+  end
 end
 
 outputStream.writeMark = function(threadID, mark)
@@ -86,7 +90,9 @@ outputStream.writeMark = function(threadID, mark)
     stream:write(writeJsonArray(mark.args))
   end
   stream:write("}")
-  stream:flush()
+  if flush then
+    stream:flush()
+  end
 end
 
 outputStream.writeCounter = function(threadID, counter)
@@ -100,7 +106,9 @@ outputStream.writeCounter = function(threadID, counter)
     stream:write(writeJsonArray(counter.args))
   end
   stream:write("}")
-  stream:flush()
+  if flush then
+    stream:flush()
+  end
 end
 
 local jsonMetadata = function(threadID, type, arg)
@@ -120,7 +128,9 @@ outputStream.writeMetadata = function(threadID, metadata)
   for key, name in pairs(metadata) do -- Supported; process_name, thread_name, thread_sort_index
     if pb then pushBack() end
     jsonMetadata(threadID, key, name)
-    stream:flush()
+    if flush then
+      stream:flush()
+    end
     pb = true
   end
 end

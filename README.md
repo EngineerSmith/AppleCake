@@ -27,7 +27,7 @@ local appleCake = require("lib.AppleCake")()      -- get whatever appleCake has 
 An example of AppleCake in a love2d project. You can see many more examples and how to use AppleCake in [AppleCake Docs](#AppleCake-Docs)
 ```lua
 local appleCake = require("lib.AppleCake")(true) -- Set to false will remove the profiling tool from the project
-appleCake.beginSession() --Will write to "profile.json" by default
+appleCake.beginSession() --Will write to "profile.json" by default in the save directory
 appleCake.setName("Example")
 
 function love.quit()
