@@ -24,7 +24,7 @@ local error = function(msg)
   _err("Error thrown by AppleCake: "..tostring(msg))
 end
 
-local isActive-- Used to return the same table as first requested
+local isActive -- Used to return the same table as first requested
 local threadStartIndex -- Used for sorting the thread; sorts by thread started
 
 local function setActiveMode(active)
@@ -160,9 +160,17 @@ return function(active)
   local markEnabled    = true
   local counterEnabled = true
   --[[ Disable logging in an area of code e.g.
-    AppleCake.enabled(AppleCake.enableLevels["none"]) -- Note, it's better to use require("libs.appleCake")(false) to stop logging. This is useful for temp disabling in a section of code
-    AppleCake.enabled(AppleCake.enableLevels["all"])
-    AppleCake.enabled(AppleCake.enableLevels["profile"]+AppleCake.enableLevels["mark"]) -- only allow profiling and marks, disable counters
+    AppleCake.enable(AppleCake.enableLevels["none"])
+    AppleCake.enable(AppleCake.enableLevels["all"])
+    -- only allow profiling and marks, disable counters
+      AppleCake.enable(AppleCake.enableLevels["profile"] + AppleCake.enableLevels["mark"])
+      AppleCake.enable(AppleCake.enableLevels["all"] - AppleCake.enableLevels["counters"])
+    -- Following also works:
+      AppleCake.enable("none")
+      AppleCake.enable("all")
+    
+     -- Note, it's better to use require("libs.appleCake")(false) to stop logging all together.
+              This is useful for temp disabling in a section of code
   ]]
   AppleCake.enable = function(level)
     if type(level) ~= "number" then
