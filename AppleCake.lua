@@ -178,9 +178,9 @@ return function(active)
       level = AppleCakeEnableLevels[level] or AppleCakeEnableLevels["all"]
     end
     
-    profileEnabled = levelNum/AppleCakeEnableLevels["profile"] % 2 == 1
-    markEnabled    = levelNum/AppleCakeEnableLevels["mark"] % 2 == 1
-    counterEnabled = levelNum/AppleCakeEnableLevels["counter"] % 2 == 1
+    profileEnabled = level/AppleCakeEnableLevels["profile"] % 2 == 1
+    markEnabled    = level/AppleCakeEnableLevels["mark"] % 2 == 1
+    counterEnabled = level/AppleCakeEnableLevels["counter"] % 2 == 1
   end
   
   -- Profile a section of code
