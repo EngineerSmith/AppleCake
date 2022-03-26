@@ -73,6 +73,7 @@ local AppleCakeRelease = {
   countMemory   = function() return emptyCounter end,
   setName       = emptyFunc,
   setThreadName = emptyFunc,
+  setThreadSortIndex = emptyFunc,
   -- Added for those who want to convert from jprof
   jprof = {
       push     = emptyFunc,
