@@ -121,21 +121,27 @@ return function(active)
   local outStream = love.thread.getChannel(threadConfig.outStreamID)
   
   local useBuffer, buffer = pcall(require, "string.buffer") -- Added in love11.4, jit2.1
+  local buf_enc, _options
+  if useBuffer then
+    _options = { dict = threadConfig.dict }
+    buf_enc = buffer.new(_options)
+    buffer = nil
+  end
   
   local bufferMode = false -- set with AppleCake.setBuffer
-  local commandBuffer, commandBufferIndex = { buffer = true }, 0
+  local commandBuffer, commandBufferIndex = { buffer = true }, 1
   
   local pushCommand = function(command, arg, force)
     commandTbl.command = command
     commandTbl[2] = arg
     if not bufferMode or force then
       if useBuffer then
-        outStream:push(buffer.encode(commandTbl))
+        outStream:push(buf_enc:reset():encode(commandTbl):get())
       else
         outStream:push(commandTbl)
       end
-    else
-      commandBuffer[commandBufferIndex] = buffer.encode(commandTbl) -- useBuffer must be true
+    else -- useBuffer must be true
+      commandBuffer[commandBufferIndex] = buf_enc:reset():encode(commandTbl):get() 
       commandBufferIndex = commandBufferIndex + 1
     end
     commandTbl[2] = nil
@@ -174,9 +180,9 @@ return function(active)
   end
   
   AppleCake.flush = function()
-    if commandBufferIndex ~= 0 then
-      outStream:push(buffer.encode(commandBuffer))
-      commandBuffer, commandBufferIndex = { buffer = true }, 0
+    if commandBufferIndex ~= 1 then
+      outStream:push(buf_enc:reset():encode(commandBuffer):get())
+      commandBuffer, commandBufferIndex = { buffer = true }, 1
     end
   end
   
@@ -283,7 +289,6 @@ return function(active)
   -- Track variable over time
   AppleCake.counter = function(name, args, counter)
     if not counterEnabled then return end
-    commandTbl.command = "writeCounter"
     if counter then
       counter.name  = name
       counter.args  = args
