@@ -158,6 +158,7 @@ return function(active)
   
   AppleCake.endSession = function()
     if thread and thread:isRunning() then
+      AppleCake.flush()
       outStream:performAtomic(function()
           outStream:clear()
           pushCommand("close", nil, true)
