@@ -55,14 +55,14 @@ while true do
     for _, encoded in ipairs(command) do
       local decoded = buffer.decode(encoded)
       local fn = commands[decoded.command]
-      if fn then
-        fn(decoded[1], decoded[2], decoded[3])
+      if fn and fn(decoded[1], decoded[2], decoded[3]) then
+        return
       end
     end
   else
     local fn = commands[command.command]
-    if fn then
-      fn(command[1], command[2], command[3])
+    if fn and fn(command[1], command[2], command[3]) then
+      return
     end
   end
 end
