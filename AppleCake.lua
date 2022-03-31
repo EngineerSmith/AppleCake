@@ -106,7 +106,7 @@ return function(active)
     enableLevels = AppleCakeEnableLevels,
   }
   
-  local threadID = tonumber(tostring(threadConfig):sub(8)) --Produces a unique consistent id based on memory (if nobody changes require)
+  local threadID = threadStartIndex
   local commandTbl = { threadID }
   
   if not love.timer then
@@ -120,10 +120,24 @@ return function(active)
   local thread
   local outStream = love.thread.getChannel(threadConfig.outStreamID)
   
-  local pushCommand = function(command, arg)
+  local useBuffer, buffer = pcall(require, "string.buffer") -- Added in love11.4, jit2.1
+  
+  local bufferMode = false -- set with AppleCake.setBuffer
+  local commandBuffer, commandBufferIndex = { buffer = true }, 0
+  
+  local pushCommand = function(command, arg, force)
     commandTbl.command = command
     commandTbl[2] = arg
-    outStream:push(commandTbl)
+    if not bufferMode or force then
+      if useBuffer then
+        outStream:push(buffer.encode(commandTbl))
+      else
+        outStream:push(commandTbl)
+      end
+    else
+      commandBuffer[commandBufferIndex] = buffer.encode(commandTbl) -- useBuffer must be true
+      commandBufferIndex = commandBufferIndex + 1
+    end
     commandTbl[2] = nil
   end
   
@@ -133,7 +147,7 @@ return function(active)
     else
       thread = lt.newThread(dirPATH.."thread.lua")
     end
-    pushCommand("open", filepath)
+    pushCommand("open", filepath, true)
     thread:start(PATH, threadID)
     if not name then
       name = love.filesystem.getIdentity()
@@ -146,7 +160,7 @@ return function(active)
     if thread and thread:isRunning() then
       outStream:performAtomic(function()
           outStream:clear()
-          pushCommand("close")
+          pushCommand("close", nil, true)
         end)
       thread:wait()
     else
@@ -154,6 +168,20 @@ return function(active)
       if i then
         error("The session can only be closed within the thread that started it.")
       end
+    end
+  end
+  
+  AppleCake.setBuffer = function(enabled)
+    bufferMode = enabled == true
+    if bufferMode and not useBuffer then
+      error("You can only use the buffer in Love11.4+, jit2.1. If you're using a package manager, sometimes it doesn't include the correct version of jit and you should use the appImage.")
+    end
+  end
+  
+  AppleCake.flush = function()
+    if commandBufferIndex ~= 0 then
+      outStream:push(buffer.encode(commandBuffer))
+      commandBuffer, commandBufferIndex = { buffer = true }, 0
     end
   end
   
@@ -195,9 +223,9 @@ return function(active)
       return profile
     else
       return {
-          name = name,
-          args = args,
           stop = AppleCake.stopProfile,
+          name  = name,
+          args  = args,
           start = getTime(),
         }
     end
@@ -210,6 +238,7 @@ return function(active)
       error("Attempted to stop and write profile more than once. If attempting to reuse profile, ensure it is passed back into the function which created it to reset it's use")
     end
     profile.stop = nil -- Can't push functions
+    profile._stopped = nil -- decrease number of fields
     
     pushCommand("writeProfile", profile)
     
@@ -266,9 +295,9 @@ return function(active)
       counter.start = getTime()
     else
       counter = {
-          name    = name,
-          args    = args,
-          start   = getTime(),
+          name  = name,
+          args  = args,
+          start = getTime(),
         }
     end
     pushCommand("writeCounter", counter)
@@ -294,9 +323,7 @@ return function(active)
       pushCommand("writeMetadata", {
           process_name = name,
           thread_name  = name,
-          thread_sort_index = threadStartIndex, -- set within main function to activate appleCake
-        })
-      
+        }, true)
     end
   end
   
@@ -304,8 +331,7 @@ return function(active)
     if type(name) == "string" then
       pushCommand("writeMetadata", {
           thread_name = name,
-          thread_sort_index = threadStartIndex, -- set within main function to activate appleCake
-        })
+        }, true)
     end
   end
   
@@ -315,7 +341,7 @@ return function(active)
       assert(index >= 0, "Given index must be greater than or equal to 0")
       pushCommand("writeMetadata", {
           thread_sort_index = index,
-        })
+        }, true)
     end
   end
   

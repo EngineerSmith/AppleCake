@@ -68,7 +68,7 @@ outputStream.writeProfile = function(threadID, profile)
     error("No file opened")
   end
   pushBack()
-  stream:write(([[{"cat":"profile","dur":%d,"name":"%s","ph":"X","pid":0,"tid":%d,"ts":%d]]):format(profile.finish-profile.start, profile.name:gsub('"','\"'), threadID, profile.start))
+  stream:write(([[{"dur":%d,"name":"%s","ph":"X","pid":0,"tid":%d,"ts":%d]]):format(profile.finish-profile.start, profile.name:gsub('"','\"'), threadID, profile.start))
   if profile.args then
     stream:write([[,"args":]])
     stream:write(writeJsonArray(profile.args))
@@ -84,7 +84,7 @@ outputStream.writeMark = function(threadID, mark)
     error("No file opened")
   end
   pushBack()
-  stream:write(([[{"cat":"mark","name":"%s","ph":"i","pid":0,"tid":%d,"s":"%s","ts":%d]]):format(mark.name:gsub('"', '\"'), threadID, mark.scope, mark.start))
+  stream:write(([[{"name":"%s","ph":"i","pid":0,"tid":%d,"s":"%s","ts":%d]]):format(mark.name:gsub('"', '\"'), threadID, mark.scope, mark.start))
   if mark.args then
     stream:write([[,"args":]])
     stream:write(writeJsonArray(mark.args))
@@ -100,7 +100,7 @@ outputStream.writeCounter = function(threadID, counter)
     error("No file opened")
   end
   pushBack()
-  stream:write(([[{"cat":"counter","name":"%s","ph":"C","pid":0,"tid":%d,"ts":%d]]):format(counter.name, threadID, counter.start))
+  stream:write(([[{"name":"%s","ph":"C","pid":0,"tid":%d,"ts":%d]]):format(counter.name, threadID, counter.start))
   if counter.args then
     stream:write([[,"args":]])
     stream:write(writeJsonArray(counter.args))

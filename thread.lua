@@ -3,6 +3,8 @@ error = function(msg)
   _err("Error thrown by AppleCake Thread: "..tostring(msg))
 end
 
+local useBuffer, buffer = pcall(require, "string.buffer") -- Added in love11.4, jit2.1
+
 local PATH, OWNER = ...
 local outputStream = require(PATH.."outputStream")
 local threadConfig = require(PATH.."threadConfig")
@@ -41,11 +43,26 @@ commands["writeProfile"]  = outputStream.writeProfile
 commands["writeMark"]     = outputStream.writeMark
 commands["writeCounter"]  = outputStream.writeCounter
 commands["writeMetadata"] = outputStream.writeMetadata
-  
+
 while true do
-  local cmd = out:demand()
-  local fn = commands[cmd.command]
-  if fn and fn(unpack(cmd)) then
-    return
+  local command
+  if useBuffer then
+    command = buffer.decode(out:demand())
+  else
+    command = out:demand()
+  end
+  if command.buffer then
+    for _, encoded in ipairs(command) do
+      local decoded = buffer.decode(encoded)
+      local fn = commands[decoded.command]
+      if fn then
+        fn(decoded[1], decoded[2], decoded[3])
+      end
+    end
+  else
+    local fn = commands[command.command]
+    if fn then
+      fn(command[1], command[2], command[3])
+    end
   end
 end
