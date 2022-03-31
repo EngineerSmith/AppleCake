@@ -159,15 +159,10 @@ return function(active)
   AppleCake.endSession = function()
     if thread and thread:isRunning() then
       AppleCake.flush()
-      outStream:performAtomic(function()
-          pushCommand("close", nil, true)
-        end)
+      pushCommand("close", nil, true)
       thread:wait()
-    else
-      local i = info:peek()
-      if i then
-        error("The session can only be closed within the thread that started it.")
-      end
+    elseif not thread then
+      error("The session can only be closed within the thread that started it.")
     end
   end
   
