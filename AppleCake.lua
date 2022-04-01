@@ -173,6 +173,7 @@ return function(active)
   end
   
   AppleCake.setBuffer = function(enabled)
+    AppleCake.flush()
     bufferMode = enabled == true
     if bufferMode and not useBuffer then
       error("You can only use the buffer in Love11.4+, jit2.1. If you're using a package manager, sometimes it doesn't include the correct version of jit and you should use the appImage.")
