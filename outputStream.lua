@@ -12,7 +12,12 @@ outputStream.open = function(filepath)
   end
   filepath = filepath or "profile.json"
   local errorMessage
-  stream, errorMessage = lfs.newFile(filepath, "w")
+  local major = love.getVersion()
+  if major == 12 and lfs.openFile then
+    stream, errorMessage = lfs.openFile(filepath, "w")
+  else
+    stream, errorMessage = lfs.newFile(filepath, "w")
+  end
   if not stream then
     error("Could not open file("..tostring(filepath)..")for writing")
   end
