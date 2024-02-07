@@ -7,7 +7,7 @@ local dirPATH = PATH:gsub("%.","/") -- for thread.lua to be read as a file
   License is MIT, details can be found in the LICENSE file
 
   Written by https://github.com/EngineerSmith or 
-  EngineerSmith#4628 on Discord
+  engineersmith_4628 on Discord
 
   You can view the profiling data visually by going to 
   chrome:\\tracing and dropping in the json created.
