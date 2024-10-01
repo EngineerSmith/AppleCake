@@ -60,7 +60,7 @@ local emptyCounter = { }
 
 local AppleCakeRelease = {
   isDebug       = false, -- Deprecated
-  isActive      = true,  -- Replaced isDebug
+  isActive      = false, -- Replaced isDebug
   enableLevels  = AppleCakeEnableLevels,
   beginSession  = emptyFunc,
   endSession    = emptyFunc,
@@ -99,16 +99,16 @@ return function(active)
   if AppleCake then -- return appleCake if it's already been made
     return AppleCake
   end
-  
+
   AppleCake = {
-    isDebug       = false, -- Deprecated
-    isActive      = true,  -- Replaced isDebug
+    isDebug       = true, -- Deprecated
+    isActive      = true, -- Replaced isDebug
     enableLevels = AppleCakeEnableLevels,
   }
-  
+
   local threadID = threadStartIndex
   local commandTbl = { threadID }
-  
+
   if not love.timer then
     require("love.timer")
   end
