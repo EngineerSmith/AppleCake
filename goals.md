@@ -77,10 +77,13 @@ end
 local ac = require("AppleCake") -- To disable, everything, don't call beginSession, or enable/disable the individual zones
 ac.beginSession()
 ac.endSession() -- Closes session if one is open, otherwise ignored.
+-- Above should also end any open batches
 
 ac.setThreadName(name)
-ac.setBuffer(enabled) -- if AC needs to be flushed
-ac.flush() -- flushes the buffer - Do we really need buffers and flushing? What's so bad about keeping a file descriptor open?
+
+ac.startBatch() -- Like start/end Frame
+ac.endBatch()
+-- Maybe even ac.startBatch("recordMemory") and we can auto record memory every 0.1 seconds or something, see countMemory
 
 ac.addHook(channel[, options:nil]) -- if channel is nil, add/remove json based output library itself adds - stop thread
 -- Options, passed to the channel as the first entry, used for things like filepath for the default json, e.g. ac.addHook(nil, { filepath = "date.profile" })
@@ -94,8 +97,9 @@ ac._onHookChange(channel, function(state --[[add/remove]]) end) -- Use this to m
 {
   type = "profile", 
   name = name, args = args,
-  _stopped = false, start = getTime(), -- time since program start
+  start = getTime(), -- time since program start
   finish = getTime(),
+  _stopped = false, -- this is an internal value - we can still send it since it'd take more time to remove than it's worth
 } -- etc. pretty much the same as the old system, but more "open" to having "hooks"
 
 ac.autoProfile() -- Auto adds profiling to all love.handlers
@@ -104,7 +108,7 @@ ac.autoProfile() -- Auto adds profiling to all love.handlers
 ac.countMemory() -- Can we have this automatically just do? While I like exposing the function, if someone used it without limiting it - the data is kind of pointless. Since it isn't a "real" way to record memory at all. Could we query the OS? Add ffi windows API, and unix support, and fallback to gc count?
 
 
-local zone = ac.zone(name[, enabled:true]) -- optional enable/disable, if disabled, all children are disabled if they don't specify a state
+local zone = ac.zone(name[, enabled:true]) -- optional enable/disable, if disabled, all children are disabled if they don't specify a state i.e. nil
 local childZone = zone:extend(name[, enabled:true]) -- name:name
 -- Is there a way we can do this without having to pass objects around? Can we use names as unique identifiers instead?
 
@@ -133,4 +137,35 @@ local counter = zone:counter(name[, args, counter])
 
 --- Notes
 -- The name that profile/mark/counters have is different from zones. This is human readable needing name, while zones don't have to be human readable
+
+--- Answer
+--[[
+
+What about this idea:
+
+name (all names, zones, profiling, mark) is like this: "engine.ai.pathfinding" - So this is two zones "engine" "ai", and one profile "pathfinding". If they're other profiles then they don't need it. This remove the low-level of how it previously worked, but makes it much more friendly to use. For example:
+]]
+
+local z = ac.zone("engine")
+local p, p2
+--
+p = z:profile("ai", p) -- on the chart it's named "engine.ai"
+p2 = z:profile("pathfinding", p2) -- on the chart it's just named "pathfinding", internally it's "engine.ai.pathfinding" - since it will be displayed on the flame graph as "pathfinding" within "engine.ai"
+p2:stop()
+p:stop()
+
+-- question
+local z2 = ac.zone("engine.ai.statemachine")
+local p3 = z2:profile("idleState") -- how would this display?, what if it's not within the time scope of previous "ai.engine" profile? 
+p3:stop()
+
+-- question
+-- How would this work for a function that's name is generated
+local foo = function()
+  local p4 = z2:profileFunc() -- will generated something like file@foo#165, or with the new name system "engine.ai.statemachine.file@foo#165" if not within any other scope
+  p4:stop()
+end
+
+-- Ofc all strings will be added to a lookup, so they only need to be parsed once, so the 1st frame will take a hit, but everything after should be fine
+
 ```
