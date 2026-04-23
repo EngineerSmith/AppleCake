@@ -1,96 +1,36 @@
-# Wants
-- Zero-overhead when disabled (JIT-friendly)
+# AppleCake 3.0
+- Zero-overhead when disabled (everything is JIT-ted out)
 - Add zones to section profiling data, so sections can be disabled/enabled independently than the whole library being on/off
-- Native support for MintMousse (support would be more on MM's side, but need to add hooks)
-- Support JSON export (Perfetto + MM, retire using chrome:\\tracing)
-- Automatic hooks into love.handlers / common callbacks
-- Docs via mkdocs-material
-- remove: jprof, old debug-heavy paths, etc.
+- Native support for MintMousse (support would be more on MM's side, but need to expose hooks)
+- Support JSON export still (look into perfetto - I'm opening to the idea of distributing shared libraries, as long as we make a git actions to build it and have it in every release for every love supported platform)
+- Automatic hooks into love.handlers
+- Move docs to mkdocs-material
+- Remove: jprof, old debug calls, etc.
+- We want performance
+- Keep threaded support!
 
-# Example
+# Spec
 ```lua
--- OLD
-local appleCake = require("AppleCake")(true) -- False will remove the profiling tool from the project
-appleCake.beginSession() -- Will create "profile.json" in the save directory by default
-appleCake.setBuffer(true) -- buffer all profiling calls before pushing to be saved out. Function works per thread.
+local ac = require("AppleCake")
 
-local thread = love.thread.newThread("TestThread.lua") -- Must start after appleCake has been started, to ensure this thread is owner of appleCake
-thread:start() -- You can call appleCake's profiling and mark functions within another thread, see further docs for more details
+ac.beginSession() -- closes session if one is open, and opens a new one
+ac.endSession() -- closes session if one is open, otherwise ignored
+-- If there is no current session, all function calls should work like the library has been disabled!
 
-function love.quit()
-  appleCake.mark("Quit", "p")  -- Add markers for timeless events, by default it will show for the entire process, "t" will show mark for only the current thread in the data
-  appleCake.endSession() -- In the event of a crash or endSession isn't reached, you can still recover the data
-  -- End session also flushes any unflushed data, due to buffering being set to true
-end
+ac.setThreadName(name) -- give a human readable name to the current thread
 
-function love.load()
-  appleCake.mark("Started load") -- Adds a mark, can be used to show an events or other details
-end
-
-local profileLoop -- Reuse tables to avoid garbage 
-local function loop(count)
-  profileLoop = appleCake.profile("Loop "..count, nil, profileLoop) -- Wrap a section of code in a profile, it doesn't have to be the entire function
-  local n = 0
-  for i=0,count do
-    n = n + i
-    appleCake.counter("loop", {n}) -- record variable, and make a bar graph of it's change
-  end
-  appleCake.counter("loop", {0})
-  profileLoop:stop() -- will write the result to file - once data has been flushed (will do it instantly if setBuffer is false)
-end
-
-local r, mem = 0, 0
-local profileUpdate -- Reuse tables to avoid garbage 
-function love.update(dt)
-  profileUpdate = appleCake.profileFunc(nil, profileUpdate) -- Auto-generates a name for the function once as we reuse, "update@main.lua#32"
-  r = r + 0.5 * dt
-  loop(100000) -- Example of nested profiling, as the function has it's own profile
-  profileUpdate:stop()
-  mem = mem + dt
-  if mem > 0.1 then -- We record memory every 0.1 seconds
-    appleCake.countMemory() -- Adds a bar on a bar graph with details of current lua memory usage
-    mem = 0
-  end
-end
-
-local lg = love.graphics
-function love.draw() -- "draw@main.lua#45", generates name for function
-  local profileDraw = appleCake.profileFunc() -- This will create new profile table every time this function is ran
-  lg.push()
-  lg.translate(50,50)
-  lg.rotate(r)
-  lg.rectangle("fill", 0,0,30,30)
-  lg.pop()
-  profileDraw.args = lg.getStats() -- Set args that we can view later in the viewer
-  profileDraw:stop() -- By setting it to love.graphics.getStats we can see details of the draw
-  appleCake.flush() -- Flush any profiling data out, would be useful to write love.run to include it
-end
-
-function love.keypressed(key)
-  appleCake.mark("Key Pressed", nil, {key=key}) -- Adds a mark every time a key is pressed, with the key as an argument
-end
-
-
-------
--- new
------
-local ac = require("AppleCake") -- To disable, everything, don't call beginSession, or enable/disable the individual zones
-ac.beginSession()
-ac.endSession() -- Closes session if one is open, otherwise ignored.
--- Above should also end any open batches
-
-ac.setThreadName(name)
-
-ac.startBatch() -- Like start/end Frame
+ac.startBatch() -- can be used for start/end frame
 ac.endBatch()
--- Maybe even ac.startBatch("recordMemory") and we can auto record memory every 0.1 seconds or something, see countMemory
+-- The batch is using a string buffer, and will keep adding to the string buffer's buffer! This prevents profiles overwriting each other if reused within the same batch
 
-ac.addHook(channel[, options:nil]) -- if channel is nil, add/remove json based output library itself adds - stop thread
--- Options, passed to the channel as the first entry, used for things like filepath for the default json, e.g. ac.addHook(nil, { filepath = "date.profile" })
+-- New system to support multiple outputs
+ac.addHook(channel[, options:nil]) -- if channel is nil, add/remove library's implemented recorder
 ac.removeHook(channel)
-ac._onHookChange(channel, function(state --[[add/remove]]) end) -- Use this to manage the hook, we'll expose it, but mostly used internally
--- Message sent over channels:
-{ -- encoded via string buffers
+ac._onHookChange(channel, function(state) --[[add/remove]] end) -- Used internally, exposed for others to manage their own if they need access to this function
+
+-- Example of messages:
+ -- encoded via string buffers
+{
   type = "begin", options = options,
   time = unixTime,
 }
@@ -100,72 +40,100 @@ ac._onHookChange(channel, function(state --[[add/remove]]) end) -- Use this to m
   start = getTime(), -- time since program start
   finish = getTime(),
   _stopped = false, -- this is an internal value - we can still send it since it'd take more time to remove than it's worth
-} -- etc. pretty much the same as the old system, but more "open" to having "hooks"
+} -- etc. pretty much the same as the old system, but more "open" to having "hooks" w/ docs
+{ -- new example, since I don't know exactly how adding to a string buffer works if you keep adding tables without reading it, how it decodes. TODO look into it!
+  type = "batch",
+  [1] = { -- contains array of messages
+    type = "profile", ...
+  }
+  [n] = { ... }
+}
 
-ac.autoProfile() -- Auto adds profiling to all love.handlers
--- I wish we could do callbacks (non-events), but that is much difficult when `love.update` is a direct change to the `love` global table - I would have to add a metatable to `love` global to do it properly. OR have a custom game loop, which is just way over stepping for a profiling library
+-- Used internally, and exposed for those who add hooks
+local encoded = ac._encode(message)
+local message = ac._decode(encoded)
 
-ac.countMemory() -- Can we have this automatically just do? While I like exposing the function, if someone used it without limiting it - the data is kind of pointless. Since it isn't a "real" way to record memory at all. Could we query the OS? Add ffi windows API, and unix support, and fallback to gc count?
+ac.autoProfile() -- Auto adds profiling zones for love.handler functions (events)
 
+ac.snapshotMemory(seconds:0.1) -- Time between snapshots, managed internally using love.timer
 
-local zone = ac.zone(name[, enabled:true]) -- optional enable/disable, if disabled, all children are disabled if they don't specify a state i.e. nil
-local childZone = zone:extend(name[, enabled:true]) -- name:name
--- Is there a way we can do this without having to pass objects around? Can we use names as unique identifiers instead?
+local zone = ac.zone(name[, enabled:true]) -- optional enable/disable, if disabled, all children are disabled if they don't specify enabled = true
 
 local profile = ac.profile(name[, args:nil, profile:nil]) -- reuse profile table to prevent repetitive memory assignments
 local profile = zone:profile(name[, args:nil, profile:nil])
+-- If you use ac.profile, it uses an internal zone which is basically "nil"
 
-profile.args = fooBar -- still able to update and change them as the scope goes on
+profile.args = fooBar -- still able to update and change profile args as the scope goes on
 profile:stop()
 
-local profile = ax.profileFunc([args:nil, profile:nil]) -- Update to use jit.util.funcinfo than debug.getinfo  to generate a function name
+local profile = ac.profileFunc([args:nil, profile:nil]) -- Update to use jit.util.funcinfo than current debug.getinfo
 local profile = zone:profileFunc([args:nil, profile:nil])
 
-ac.mark(name[, scope:"process", args:nil]) -- move from "p", "t" -> "process", "thread"
+ac.mark(name[, scope:"process", args:nil]) -- move from "p", "t" to "process", "thread" - or better names
 zone:mark(name[, scope:"process", args:nil])
 
-local counter = ac.counter(name[, args, counter])
-local counter = zone:counter(name[, args, counter])
+local counter = ac.counter(name[, args:nil, counter:nil]) -- reuse counters as we had them before
+local counter = zone:counter(name[, args:nil, counter:nil])
 
---- Questions this brings up
--- Do zones need names? Can we remove names? If we have names can we use them to assign hierarchy?
--- Should we enforce frames? If we do, how do frames work on threads? That should be left to a gameloop profile, not for us to handle separately
--- If we did have frames, we could manually track GC memory usage - we need better memory insight than collectcarbage("count")
--- For zone names, could we use MM logging names? We could always generate a zone name for the file
--- Could we profile memory per zone to find hotspots? Not with the current way to get memory, it would just be too inefficient. 
--- What if there are multiple files with the same name e.g. init.lua; can we differentiate them? Can we add the zone name to their channel message so it can be recorded out?
-
---- Notes
--- The name that profile/mark/counters have is different from zones. This is human readable needing name, while zones don't have to be human readable
-
---- Answer
 --[[
+# Why zones?
 
-What about this idea:
+AppleCake has always been a profiler you can add to your code, which you could disable without needing to removing all the code, but this is very binary, all or nothing. With zones, you can individually choose areas of code you want to profile, this doesn't just make profiling more targetted, it means a lot less performance is taken up by disabled zones.
 
-name (all names, zones, profiling, mark) is like this: "engine.ai.pathfinding" - So this is two zones "engine" "ai", and one profile "pathfinding". If they're other profiles then they don't need it. This remove the low-level of how it previously worked, but makes it much more friendly to use. For example:
+The whole library can still be disabled, just never start a session!
+
+# How do names work?
+
+All names (zones, profiling, mark, counter, etc.) work with a separator, ie. "engine.ai.pathfinding" - so this could be two zones, "engine" and "ai", and one profile "pathfinding". This enforces a workflow that AppleCake 2.0 does not. But, we get more fine control over what is profiled or what isn't. Plus, if we give this as a searchable category, users can do "engine.ai.*" to find everything in their ai zone.
+
 ]]
 
-local z = ac.zone("engine")
-local p, p2
---
-p = z:profile("ai", p) -- on the chart it's named "engine.ai"
-p2 = z:profile("pathfinding", p2) -- on the chart it's just named "pathfinding", internally it's "engine.ai.pathfinding" - since it will be displayed on the flame graph as "pathfinding" within "engine.ai"
-p2:stop()
-p:stop()
+-- Example
+local z1 = ac.zone("engine")
+local z2 = ac.zone("engine.ai") -- child of "engine"
 
--- question
-local z2 = ac.zone("engine.ai.statemachine")
-local p3 = z2:profile("idleState") -- how would this display?, what if it's not within the time scope of previous "ai.engine" profile? 
+local p1, p2
+p1 = z1:profile("ai", nil, p) -- while there is a conflict, it can easily be resolved as zones are just categories - they can have the same namespace as a zone!
+p2 = z1:profile("pathfinding", nil, p2) -- This will be in category "engine.ai.pathfinding", but in perfetto only show as "pathfinding", as the above profile will show "engine.ai", and thus, it can be inferred, that it is "engine.ai.pathfinding", while still being readable!
+
+p2:stop()
+p1:stop()
+
+local z3 = ax.zone("engine.ai.stateMachine")
+local p3 = z3:profile("idleState") -- As it's not within `p1`, it will appear as "engine.ai.stateMachine.idleState" as it's not within any other scope
 p3:stop()
 
--- question
--- How would this work for a function that's name is generated
+local p4
 local foo = function()
-  local p4 = z2:profileFunc() -- will generated something like file@foo#165, or with the new name system "engine.ai.statemachine.file@foo#165" if not within any other scope
+  p4 = z3:profileFunc({ }, p4) -- Will appear as "engine.ai.stateMachine.file@foo#165, as profileFunc generates it's own name based on the call stack
+  p4.args.data = "bar" -- it can be accessed and filled - note that we had to set it to an arg table, otherwise we would index nil (note, arg tables can also be reused)
   p4:stop()
 end
 
--- Ofc all strings will be added to a lookup, so they only need to be parsed once, so the 1st frame will take a hit, but everything after should be fine
+--[[
+# Questions
+
+## Who should handle scopes? How should scopes be handled? 
+
+I like the idea of handle once, cache into the profile table to be reused - we can always check if the scope or given name changes and update it accordingly. We can document that users should avoid dynamic names due to performance of handling the strings and scope. If they complain, we point them to the sign about dynamic names. This is a architecture choice of AppleCake 3.0
+
+Zones handle scope; and there is a "global" table within AC which determines which scopes are enabled or disabled, so it can be easily checked if a scope is disabled, Note the following
+
+# Should names be resolved when the profile is created once and put into a lookup table, or should the name, and scope be given to the hook to handle themselves?
+
+Names should resolved once within the zone, and used again with the reusableProfile that can be passed back in
+
+# Should we support the flow of `:profile(name, profile)
+where we check if `args` is a table, and if it has our profile metatable - it means no more flow of:
+local profile
+profile = zone:profile("foobar", nil, profile) -- That additional nil - so easy to forget, but having it written out like this makes it easy to remember
+
+# What about this idea? profile:start()
+
+Where you can start a stopped profile, so you don't have to use the same `zone:profile` zone anymore, you could pass something like `zone:profile("foobar", nil, "doNotStart") or something, and then it can be used as an object?
+
+I'm not sold on this idea, AppleCake 2.0, stuck with defining it every time, because it was simple - you didn't need to manage the lifetime of the object so well, you just created it, and passed it in if you wanted to reuse it.
+
+]]
 
 ```
