@@ -171,7 +171,7 @@ We support both, but all hooks have to be manually set before starting a session
 
 ```lua
 ac.addHook("json", { filepath = "profile.json" })
-ac.addHook("perfetto")
+ac.addHook("perfetto", { filepath = "profile.perfetto", ignoreArgs = false }) -- ignoreArgs for profiles, and marks for performance reasoning over FFI C isn't JIT compilable
 ac.beginSession()
 ac.removeHook("json") -- Can't remove hooks during session? Or do we just "fake" ending the session for them if one is currently running? It's more control to the user than restricting them
 ac.removeHook("perfetto")
