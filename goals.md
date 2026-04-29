@@ -28,6 +28,7 @@ ac.beginSession() -- closes session if one is open, and opens a new one
 ac.endSession() -- closes session if one is open, otherwise ignored
 -- If there is no current session, all function calls should work like the library has been disabled!
 
+ac.setProcessName([name:love.filesystem.getIdentity()])
 ac.setThreadName(name) -- give a human readable name to the current thread
 
 ac.startBatch() -- can be used for start/end frame
