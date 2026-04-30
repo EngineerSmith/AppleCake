@@ -22,7 +22,7 @@ perfetto.init = function(options)
   else
     perfetto.profileEnd = function(zone, name, _, _, args) end
 
-    perfetto.mark = function(zone, name, scope, time, args) end
+    perfetto.mark = function(zone, name, scope, _, args) end
   end
   return true
 end
@@ -36,7 +36,7 @@ perfetto.endSession = function() end
 
 perfetto.profileStart = function(zone, name) end
 
-perfetto.counter = function(zone, name, time, key, value) end
+perfetto.counter = function(zone, name, _, key, value) end
 
 perfetto.flush = function() end
 
