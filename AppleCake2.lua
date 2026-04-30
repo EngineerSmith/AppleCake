@@ -39,6 +39,9 @@ local emptyZone = {
   profileFunc = function(_, _) return emptyProfile end,
   counter = emptyFunc,
   mark = emptyFunc,
+  enable = emptyFunc,
+  disable = emptyFunc,
+  isEnabled = function() return false end,
 }
 
 local appleCakeDisabled = {
@@ -65,7 +68,62 @@ local appleCake
 local buildAppleCake = function()
   appleCake = {
     isActive = true,
+    _sessionActive = false,
+    _hooks = { },
+    _hooksArray = { },
   }
+
+  -- Sessions
+  appleCake.beginSession = function()
+    if appleCake._sessionActive then
+      appleCake.endSession()
+    end
+    appleCake._sessionActive = true
+  end
+
+  appleCake.endSession = function()
+    if not appleCake._sessionActive then
+      return
+    end
+    appleCake._sessionActive = false
+  end
+
+  -- Hooks
+  appleCake.addHook = function(hookID, options)
+    local callback = appleCake._hooks[hookID]
+    if callback then
+      callback(hook, "add", options)
+    end
+  end
+
+  appleCake.removeHook = function(hookID)
+
+  end
+
+  appleCake._defineHook = function(hookID)
+    --[[
+    How should hooks work? Call backs? Let's figure out what each one needs
+
+    FOR PERFETTO:
+      profile start event: category + name + flowID[optional][Start/End]
+      profile end event: category + args[optional]
+      counter: category + name + value + units[optional] (OR) counterMultiplier[optional]
+      mark: category + name + scope + args[optional] + flowID[optional][Start/End]
+
+    JSON:
+      profile end event: category + name + startTime + finishTime + args[optional] + flowID[optional][Start/End] +threadID
+      counter: category + name + value + units[optional] (OR) counterMultiplier[optional] + threadID
+      mark: category + name + scope + args[optional] + flowID[optional][Start/End] + threadID
+
+    Note, Perfetto can't be batched. So we should be able to define that, to tell AppleCake "Don't batch for this hook even if you've been told to"
+
+    The below function _onHookChange was imagined as a way to start/stop threads for hooks like JSON, but they could just be part of this definition function
+    ]]
+  end
+
+  appleCake._onHookChange = function(hook, callback) -- callback(hook, state, options)
+    appleCake._hooks[hook] = callback
+  end
 end
 
 return function(active)
