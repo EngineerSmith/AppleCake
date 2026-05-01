@@ -9,6 +9,8 @@ local log = require(PATH .. "logger")
 
 local isActive, threadIndex
 
+local processName
+
 local setActiveMode = function(active)
   if isActive == nil then
     local c = love.thread.getChannel("AppleCakeController")
@@ -46,17 +48,17 @@ local emptyZone = {
 
 local appleCakeDisabled = {
   isActive = false,
-  beginSession   = emptyFunc,
-  endSession     = emptyFunc,
-  setProcessName = emptyFunc,
-  setThreadName  = emptyFunc,
-  startBatch     = emptyFunc,
-  endBatch       = emptyFunc,
-  addHook        = emptyFunc,
-  removeHook     = emptyFunc,
-  _onHookChange  = emptyFunc,
-  autoProfile    = emptyFunc,
-  snapshotMemory = emptyFunc,
+  startSession      = emptyFunc,
+  finishSession     = emptyFunc,
+  addHook           = emptyFunc,
+  removeHook        = emptyFunc,
+  _registerProvider = emptyFunc,
+  setProcessName    = emptyFunc,
+  setThreadName     = emptyFunc,
+  startBatch        = emptyFunc,
+  endBatch          = emptyFunc,
+  autoProfile       = emptyFunc,
+  snapshotMemory    = emptyFunc,
   zone = function(_, _) return emptyZone end,
   profile     = emptyZone.profile,
   profileFunc = emptyZone.profileFunc,
@@ -73,53 +75,108 @@ local buildAppleCake = function()
     _hooks = { },
   }
 
-  -- Sessions
-  appleCake.beginSession = function()
-    if appleCake._sessionActive then
-      appleCake.endSession()
-    end
-    appleCake._sessionActive = true
-  end
+  if not love.isThread then
 
-  appleCake.endSession = function()
-    if not appleCake._sessionActive then
-      return
+  -- Sessions
+    appleCake.startSession = function()
+      if appleCake._sessionActive then
+        appleCake.finishSession()
+      end
+      appleCake._sessionActive = true
+      for _, provider in ipairs(appleCake._hooks) do
+        provider.startSession()
+      end
     end
-    appleCake._sessionActive = false
-  end
+
+    appleCake.finishSession = function()
+      if not appleCake._sessionActive then
+        return
+      end
+      appleCake._sessionActive = false
+      for _, provider in ipairs(appleCake._hooks) do
+        provider.finishSession()
+      end
+    end
 
   -- Hooks
-  if not love.isThread then
     appleCake.addHook = function(providerID, options)
-      -- check if provider exists
-      -- run init(options), if return true, it works, false, it failed, log event
+      local provider = appleCake._providers[providerID]
+      if not provider then
+        log:warning("Could not find provider:", providerID)
+        return false, "not found"
+      end
+
+      local success, errMsg = pcall(provider.init, options)
+      if not success then
+        log:warning("Couldn't initiate provider", providerID, ". Reason:", errMsg)
+        return false, "not init"
+      end
+
+      table.insert(appleCake._hooks, provider)
+      log:info("Added hook:", providerID)
+
+      provider.setProcessName(processName)
+      return true
     end
 
     appleCake.removeHook = function(providerID)
+      local providerIndex
+      for i, p in ipairs(appleCake._hooks) do
+        if p.id == providerID then
+          providerIndex = i
+          break
+        end
+      end
+      if not providerIndex then
+        log:warning("Couldn't find provider to remove:", providerID)
+        return false
+      end
+      local provider = appleCake._hooks[i]
+      if appleCake._sessionActive then
+        provider.finishSession()
+      end
+      provider.shutdown()
+      table.remove(appleCake._hooks, providerIndex)
+      return true
+    end
 
+    appleCake.shutdown = function()
+      appleCake.finishSession()
+      for _, provider in ipairs(appleCake._hooks) do
+        provider.shutdown()
+      end
+      appleCake._hooks = { }
     end
 
     appleCake._registerProvider = function(provider)
-      appleCake._providers[provider.name] = provider
-      --[[
-      How should hooks work? Call backs? Let's figure out what each one needs
-
-      FOR PERFETTO:
-        profile start event: category + name + flowID[optional][Start/End]
-        profile end event: category + args[optional]
-        counter: category + name + value + units[optional] (OR) counterMultiplier[optional]
-        mark: category + name + scope + args[optional] + flowID[optional][Start/End]
-
-      JSON:
-        profile end event: category + name + startTime + finishTime + args[optional] + flowID[optional][Start/End] +threadID
-        counter: category + name + value + units[optional] (OR) counterMultiplier[optional] + threadID
-        mark: category + name + scope + args[optional] + flowID[optional][Start/End] + threadID
-
-      Note, Perfetto can't be batched. So we should be able to define that, to tell AppleCake "Don't batch for this hook even if you've been told to"
-
-      ]]
+      appleCake._providers[provider.id] = provider
     end
+    --[[
+    How should hooks work? Call backs? Let's figure out what each one needs
 
+    FOR PERFETTO:
+      profile start event: category + name + flowID[optional][Start/End]
+      profile end event: category + args[optional]
+      counter: category + name + value + units[optional] (OR) counterMultiplier[optional]
+      mark: category + name + scope + args[optional] + flowID[optional][Start/End]
+
+    JSON:
+      profile end event: category + name + startTime + finishTime + args[optional] + flowID[optional][Start/End] +threadID
+      counter: category + name + value + units[optional] (OR) counterMultiplier[optional] + threadID
+      mark: category + name + scope + args[optional] + flowID[optional][Start/End] + threadID
+
+    Note, Perfetto can't be batched. So we should be able to define that, to tell AppleCake "Don't batch for this hook even if you've been told to"
+
+    We're going for an interface based approach, where they all have functions they need to implement
+    ]]
+  end
+
+  processName = love.filesystem.getIdentity()
+  appleCake.setProcessName = function(name)
+    processName = name
+    for _, provider in ipairs(appleCake.hooks) do
+      provider.setProcessName(processName)
+    end
   end
 end
 

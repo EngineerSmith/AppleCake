@@ -1,5 +1,5 @@
 local json = {
-  name = "Json"
+  id = "json"
 
   requiresStartEvent = true,
   supportsBatching = true,
@@ -13,8 +13,8 @@ json.shutdown = function()
 
 end
 
-json.beginSession = function() end
-json.endSession = function() end
+json.startSession = function() end
+json.finishSession = function() end
 
 json.startBatch = function()
   -- todo init batching

@@ -1,7 +1,7 @@
 local require("ffi")
 
 local perfetto = {
-  name = "Perfetto",
+  id = "perfetto",
 
   requiresStartEvent = true,
   supportsBatching = false,
@@ -31,8 +31,8 @@ perfetto.shutdown = function()
 
 end
 
-perfetto.beginSession = function() end
-perfetto.endSession = function() end
+perfetto.startSession = function() end
+perfetto.finishSession = function() end
 
 perfetto.profileStart = function(zone, name) end
 
