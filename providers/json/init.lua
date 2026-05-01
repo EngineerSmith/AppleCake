@@ -20,7 +20,7 @@ json.startBatch = function()
   -- todo init batching
   json._setBatching(true)
 end
-json.endBatch = function()
+json.finishBatch = function()
   -- todo push batch to channel
   json._setBatching(false)
 end

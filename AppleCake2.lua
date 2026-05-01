@@ -9,7 +9,7 @@ local log = require(PATH .. "logger")
 
 local isActive, threadIndex
 
-local processName
+local processName, threadName
 
 local setActiveMode = function(active)
   if isActive == nil then
@@ -68,6 +68,8 @@ local appleCakeDisabled = {
 
 local appleCake
 local buildAppleCake = function()
+  if appleCake then return end
+
   appleCake = {
     isActive = true,
     _sessionActive = false,
@@ -108,7 +110,7 @@ local buildAppleCake = function()
 
       local success, errMsg = pcall(provider.init, options)
       if not success then
-        log:warning("Couldn't initiate provider", providerID, ". Reason:", errMsg)
+        log:warning("Couldn't initiate provider:", providerID, ". Reason:", errMsg)
         return false, "not init"
       end
 
@@ -116,6 +118,7 @@ local buildAppleCake = function()
       log:info("Added hook:", providerID)
 
       provider.setProcessName(processName)
+      provider.setThreadName(threadName)
       return true
     end
 
@@ -168,16 +171,74 @@ local buildAppleCake = function()
     Note, Perfetto can't be batched. So we should be able to define that, to tell AppleCake "Don't batch for this hook even if you've been told to"
 
     We're going for an interface based approach, where they all have functions they need to implement
+    We don't care about flowIDs start/end right now - focus on getting 1:1 feature with AppleCake 2.1
     ]]
   end
 
   processName = love.filesystem.getIdentity()
   appleCake.setProcessName = function(name)
+    if type(name) ~= "string" then
+      log:warning("setProcessName arg name expected type string")
+      return
+    end
     processName = name
     for _, provider in ipairs(appleCake.hooks) do
       provider.setProcessName(processName)
     end
   end
+
+  threadName = (threadIndex == 0 and "main" or "thread:" .. threadIndex)
+  appleCake.setThreadName = function(name)
+    if type(name) ~= "string" then
+      log:Warning("setThreadName arg name expected type string")
+      return
+    end
+    threadName = name
+    for _, provider in ipairs(appleCake.hooks) do
+      provider.setThreadName(name)
+    end
+  end
+
+  appleCake.startBatch = function()
+    for _, provider in ipairs(appleCake.hooks) do
+      if provider.supportsBatching then
+        provider.startBatch()
+      end
+    end
+  end
+
+  appleCake.finishBatch = function()
+    for _, provider in ipairs(appleCake.hooks) do
+      if provider.supportsBatching then
+        provider.finishBatch()
+      end
+    end
+  end
+
+  appleCake.autoProfile = function()
+    -- todo blocked by profiles
+  end
+
+  appleCake.snapshotMemory = function()
+    -- todo blocked by counters
+  end
+
+  appleCake.profile = function()
+    -- todo blocked by zones
+  end
+
+  appleCake.profileFunc = function()
+    -- todo blocked by zones
+  end
+
+  appleCake.counter = function()
+    -- todo blocked by zones
+  end
+
+  appleCake.mark = function()
+    -- todo blocked by zones
+  end
+
 end
 
 return function(active)
@@ -185,8 +246,6 @@ return function(active)
   if not isActive then
     return appleCakeDisabled
   end
-  if not appleCake then
-    buildAppleCake()
-  end
+  buildAppleCake()
   return appleCake
 end
