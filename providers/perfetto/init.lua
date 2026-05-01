@@ -16,13 +16,13 @@ perfetto.init = function(options)
 
   -- We define two functions to avoid branching
   if options.ignoreArgs then
-    perfetto.profileEnd = function(zone, name, _, _, _) end
+    perfetto.profileEnd = function(category, name, _, _, _) end
 
-    perfetto.mark = function(zone, name, scope, _) end
+    perfetto.mark = function(category, name, scope, _) end
   else
-    perfetto.profileEnd = function(zone, name, _, _, args) end
+    perfetto.profileEnd = function(category, name, _, _, args) end
 
-    perfetto.mark = function(zone, name, scope, _, args) end
+    perfetto.mark = function(category, name, scope, _, args) end
   end
   return true
 end
@@ -34,9 +34,9 @@ end
 perfetto.startSession = function() end
 perfetto.finishSession = function() end
 
-perfetto.profileStart = function(zone, name) end
+perfetto.profileStart = function(category, name) end
 
-perfetto.counter = function(zone, name, _, key, value) end
+perfetto.counter = function(category, name, _, value) end
 
 perfetto.flush = function() end
 

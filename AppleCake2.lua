@@ -38,6 +38,7 @@ local getTime = function() -- Time in microseconds
   return _getTime() * 1e+6
 end
 
+-- Note, AppleCake disabled vars is also used when zones are disabled
 local emptyFunc = function() end
 local emptyProfile = { stop = emptyFunc, args = { }}
 local emptyCounter = { }
@@ -89,6 +90,84 @@ local buildAppleCake = function()
     self.finish = getTime()
     for _, provider in ipairs(appleCake._hooks) do
       provider.profileEnd(self.category, self.name, self.start, self.finish, self.args)
+    end
+  end
+
+  local zoneRegistry = { }
+
+  local zoneMT = { }
+  zoneMT.__index = zoneMT
+
+  local getOrCreateZone = function(category, enabled)
+    if zoneRegistry[category] then
+      if enabled ~= nil then
+        zoneRegistry[category].enabled = enabled
+      end
+      return zoneRegistry[category]
+    end
+
+    local self = setmetatable({ }, zoneMT)
+    self.category = category
+    self.enabled = enabled
+
+    if category ~= "" then
+      local parentCategory = category:match("^(.*)%.[^%.]+$") or ""
+      self.parent = getOrCreateZone(parentCategory)
+    end
+
+    zoneRegistry[category] = self
+    return self
+  end
+
+  zone.enable = function(self) self.enabled = true end
+  zone.disable = function(self) self.enabled = false end
+  zone.inherit = function(self) self.enabled = nil end
+  zone.isEnabled = function(self)
+    if self.enabled ~= nil then
+      return self.enabled
+    end
+    if self.parent then
+      return self.parent:isEnabled()
+    end
+    return appleCake.isActive -- fallback
+  end
+
+  zone.profile = function(self, name, args, profile)
+    if not self:isEnabled() then return emptyProfile end
+    local start = getTime()
+
+    local profile = profile or setmetatable({ }, activeProfileMT)
+
+    profile.category = self.category
+    profile.name = name
+    profile.args = args or profile.args
+    profile.start = start
+
+    for _, provider in ipairs(appleCake._hooks) do
+      if provider.profileStart then
+        provider.profileStart(profile.category, profile.name)
+      end
+    end
+
+    return profile
+  end
+
+  zone.mark = function(self, scope, args)
+    if not self:isEnabled() then return end
+    local time = getTime()
+    scope = scope or "process"
+
+    for _, provider in ipairs(appleCake._hooks) do
+      provider.mark(self.category, name, scope, time, args)
+    end
+  end
+
+  zone.counter = function(self, name, value)
+    if not self:isEnabled() then return end
+    local time = getTime()
+
+    for _, provider in ipairs(appleCake._hooks) do
+      provider.counter(self.category, name, time, value)
     end
   end
 
@@ -227,6 +306,12 @@ local buildAppleCake = function()
       if provider.supportsBatching then
         provider.finishBatch()
       end
+    end
+  end
+
+  appleCake.flush = function()
+    for _, provider in ipairs(appleCake.hooks) do
+      provider.flush()
     end
   end
 
