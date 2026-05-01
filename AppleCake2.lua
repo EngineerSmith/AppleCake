@@ -33,6 +33,11 @@ local setActiveMode = function(active)
   end
 end
 
+local _getTime = love.timer.getTime
+local getTime = function() -- Time in microseconds
+  return _getTime() * 1e+6
+end
+
 local emptyFunc = function() end
 local emptyProfile = { stop = emptyFunc, args = { }}
 local emptyCounter = { }
@@ -76,6 +81,16 @@ local buildAppleCake = function()
     _providers = { }
     _hooks = { },
   }
+
+  local activeProfileMT = { }
+  activeProfileMT.__index = activeProfileMT
+
+  activeProfileMT.stop = function(self)
+    self.finish = getTime()
+    for _, provider in ipairs(appleCake._hooks) do
+      provider.profileEnd(self.category, self.name, self.start, self.finish, self.args)
+    end
+  end
 
   if not love.isThread then
 

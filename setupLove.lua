@@ -1,8 +1,14 @@
--- Script used to setup love for AppleCake, mostly taken from MintMousse
--- https://github.com/EngineerSmith/MintMousse
+-- Script used to setup love for AppleCake, taken from MintMousse's style
+-- https://github.com/EngineerSmith/MintMousse/blob/main/setupLove.lua
+
+local errMsg = "AppleCake: Library is missing dependency LÖVE's %s module."
 
 if not love.thread then
-  require("love.thread")
+  assert(pcall(require, "love.thread"), errMsg:format("thread"))
+end
+
+if not love.timer then
+  assert(pcall(require, "love.timer"), errMsg:format("timer"))
 end
 
 if love.isThread == nil then
