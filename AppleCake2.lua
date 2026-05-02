@@ -7,8 +7,25 @@ love.__applecake = PATH
 
 local log = require(PATH .. "logger")
 
-local isActive, threadIndex
+-- TODO use channel to sync information across threads, such as what hooks should be active so they can correct route.
+local acSync = love.thread.getChannel("AppleCakeSync")
 
+-- Ah, this introduces a lot of issues, or needing a polling function on every thread for AppleCake.
+-- Can we alter the plan to prevent needing a polling function?
+-- Such as removing the ability to remove hooks?
+-- Where you define how you want the AppleCake library to work, and then before starting any other threads
+-- you "bake" these settings? 
+
+-- With AppleCake 2.1, it was pretty much 0 setup
+-- You'd just "enable" or "disable" the library in the main thread, and then just continue to use it anywhere
+-- This is what I want still. Maybe instead of AppleCake returning a function to be called, it returns a table
+-- In this table is our "addHook", "_registerProvider" functions, etc. Then you do `.bake(enable/disable)`
+-- This then puts the info into the sync channel, which all threads can just check, and then when they are required
+-- Instead of returning the table to setup AppleCake, they just return the enabled/disabled library
+-- I would want to change how require works too, since on the main thread, I wouldn't want every file doing
+-- require("libs.AppleCake") and getting the setup table, so we should change _G to return the correct AppleCake instant
+
+local isActive, threadIndex
 local processName, threadName
 
 local setActiveMode = function(active)
@@ -98,6 +115,12 @@ local buildAppleCake = function()
   local zoneMT = { }
   zoneMT.__index = zoneMT
 
+  -- This is broken
+  -- What if we create zones in this order, then their parents are incorrect:
+  -- engine
+  -- engine.ai.pathfinding - thinks engine is parent
+  -- engine.ai -- should have child pathfinding, but doesn't
+
   local getOrCreateZone = function(category, enabled)
     if zoneRegistry[category] then
       if enabled ~= nil then
@@ -152,22 +175,22 @@ local buildAppleCake = function()
     return profile
   end
 
-  zone.mark = function(self, scope, args)
-    if not self:isEnabled() then return end
-    local time = getTime()
-    scope = scope or "process"
-
-    for _, provider in ipairs(appleCake._hooks) do
-      provider.mark(self.category, name, scope, time, args)
-    end
-  end
-
   zone.counter = function(self, name, value)
     if not self:isEnabled() then return end
     local time = getTime()
 
     for _, provider in ipairs(appleCake._hooks) do
       provider.counter(self.category, name, time, value)
+    end
+  end
+
+  zone.mark = function(self, name, scope, args)
+    if not self:isEnabled() then return end
+    local time = getTime()
+    scope = scope or "process"
+
+    for _, provider in ipairs(appleCake._hooks) do
+      provider.mark(self.category, name, scope, time, args)
     end
   end
 
@@ -267,20 +290,21 @@ local buildAppleCake = function()
     We're going for an interface based approach, where they all have functions they need to implement
     We don't care about flowIDs start/end right now - focus on getting 1:1 feature with AppleCake 2.1
     ]]
+
+    processName = love.filesystem.getIdentity()
+    appleCake.setProcessName = function(name)
+      if type(name) ~= "string" then
+        log:warning("setProcessName arg name expected type string")
+        return
+      end
+      processName = name
+      for _, provider in ipairs(appleCake.hooks) do
+        provider.setProcessName(processName)
+      end
+    end
   end
 
-  processName = love.filesystem.getIdentity()
-  appleCake.setProcessName = function(name)
-    if type(name) ~= "string" then
-      log:warning("setProcessName arg name expected type string")
-      return
-    end
-    processName = name
-    for _, provider in ipairs(appleCake.hooks) do
-      provider.setProcessName(processName)
-    end
-  end
-
+  -- Wait, how does this work if threads don't know what hooks it should be calling? We need a thread mechanic to share hook definitions
   threadName = (threadIndex == 0 and "main" or "thread:" .. threadIndex)
   appleCake.setThreadName = function(name)
     if type(name) ~= "string" then
@@ -316,27 +340,36 @@ local buildAppleCake = function()
   end
 
   appleCake.autoProfile = function()
-    -- todo blocked by profiles
+    -- todo
   end
 
   appleCake.snapshotMemory = function()
-    -- todo blocked by counters
+    -- todo
   end
 
-  appleCake.profile = function()
-    -- todo blocked by zones
+  local rootZone = getOrCreateZone("") -- We should be able to enable/disable this zone itself too
+  appleCake.zone = function(category, enabled)
+    if type(category) ~= "string" then
+      log:warning("zone arg category expected type string")
+      return nil
+    end
+    return getOrCreateZone(category, enabled)
+  end
+
+  appleCake.profile = function(name, args, profile)
+    return rootZone:profile(name, args, profile)
   end
 
   appleCake.profileFunc = function()
-    -- todo blocked by zones
+    -- TODO use jit.funcinfo over debug info
   end
 
-  appleCake.counter = function()
-    -- todo blocked by zones
+  appleCake.counter = function(name, value)
+    rootZone:counter(name, value)
   end
 
-  appleCake.mark = function()
-    -- todo blocked by zones
+  appleCake.mark = function(name, scope, args)
+    rootZone:mark(name, scope, args)
   end
 
 end
