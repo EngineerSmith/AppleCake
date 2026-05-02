@@ -36,7 +36,7 @@ perfetto.finishSession = function() end
 
 perfetto.profileStart = function(category, name) end
 
-perfetto.counter = function(category, name, _, value) end
+perfetto.counter = function(category, name, _, value, units) end
 
 perfetto.flush = function() end
 

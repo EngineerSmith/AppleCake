@@ -1,4 +1,7 @@
 -- Simple logging, use mintmousse if available
+-- https://mintmousse.engineersmith.net/latest/logging/
+
+-- Feel free to override this with your own logger to route logs to your system
 
 if love.__mintmousse then
   local success, mintmousse = pcall(require, love.__mintmousse)
@@ -7,7 +10,6 @@ if love.__mintmousse then
   end
 end
 
--- Dummy logger if mintmousse isn't found
 local logger = {
   name = "AppleCake"
 }
@@ -20,9 +22,8 @@ logger.extend = function(parent, name, _)
 end
 
 local varargsToString = function(...)
-  local argCount = select('#', ...)
   local messageParts = { }
-  for i = 1, argCount do
+  for i = 1, select('#', ...) do
     local value = select(i, ...)
     messageParts[i] = tostring(i)
   end

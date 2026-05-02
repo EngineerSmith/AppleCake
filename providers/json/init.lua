@@ -25,19 +25,21 @@ json.finishBatch = function()
   json._setBatching(false)
 end
 
+-- Unbatched
 local unbatched_profileStart = function(category, name) end
 local unbatched_profileEnd = function(category, name, startT, endT, args) end
 
 local unbatched_mark = function(category, name, scope, time, args) end
 
-local unbatched_counter = function(category, name, time, value) end
+local unbatched_counter = function(category, name, time, value, units) end
 
+-- Batched
 local batched_profileStart = function(category, name) end
 local batched_profileEnd = function(category, name, startT, endT, args) end
 
 local batched_mark = function(category, name, scope, time, args) end
 
-local batched_counter = function(category, name, time, value) end
+local batched_counter = function(category, name, time, value, units) end
 
 json._setBatching = function(isBatching)
   if isBatching then
@@ -52,6 +54,7 @@ json._setBatching = function(isBatching)
     json.counter = unbatched_counter
   end
 end
+json._setBatching(false)
 
 json.flush = function() end
 
