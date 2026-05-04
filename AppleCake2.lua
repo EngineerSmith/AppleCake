@@ -14,6 +14,7 @@ local getTime = function() -- Time in microseconds
   return _getTime() * 1e+6
 end
 
+-- Benchmarking https://gist.github.com/EngineerSmith/f99c1ba503ec090f34b0659978a829c7
 local generateFuncName = function()
   local info = debug.getinfo(3, "fnS")
   local name = info.name or tostring(info.func):sub(10)
