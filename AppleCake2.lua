@@ -7,6 +7,7 @@ love.__applecake = PATH
 local log = require(PATH .. "logger")
 local setup = require(PATH .. "setup")
 setup._bake()
+local hooks = setup._hooks
 
 local _getTime = love.timer.getTime
 local getTime = function() -- Time in microseconds
@@ -61,7 +62,7 @@ activeProfileMT.__index = activeProfileMT
 
 activeProfileMT.stop = function(self)
   self.finish = getTime()
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     provider.profileEnd(self.category, self.name, self.start, self.finish, self.args)
   end
 end
@@ -116,7 +117,7 @@ zone.profile = function(self, name, args, profile)
   profile.args = args or profile.args
   profile.start = start
 
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     if provider.profileStart then
       provider.profileStart(profile.category, profile.name)
     end
@@ -129,7 +130,7 @@ zone.counter = function(self, name, value, units)
   if not self:isEnabled() then return end
   local time = getTime()
 
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     provider.counter(self.category, name, time, value)
   end
 end
@@ -139,7 +140,7 @@ zone.mark = function(self, name, scope, args)
   local time = getTime()
   local scope = scope or "process"
 
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     provider.mark(self.category, name, scope, time, args)
   end
 end
@@ -151,7 +152,7 @@ if not love.isThread then
       appleCake.finishSession()
     end
     appleCake._sessionActive = true
-    for _, provider in ipairs(setup._hooks) do
+    for _, provider in ipairs(hooks) do
       provider.startSession()
     end
   end
@@ -161,7 +162,7 @@ if not love.isThread then
       return
     end
     appleCake._sessionActive = false
-    for _, provider in ipairs(setup._hooks) do
+    for _, provider in ipairs(hooks) do
       provider.finishSession()
     end
   end
@@ -170,7 +171,7 @@ if not love.isThread then
   -- We could just find that acceptable, after all - at this point we expect everything to stop.
   appleCake.shutdown = function()
     appleCake.finishSession()
-    for _, provider in ipairs(setup._hooks) do
+    for _, provider in ipairs(hooks) do
       provider.shutdown()
     end
     appleCake.isActive = false
@@ -181,7 +182,7 @@ if not love.isThread then
       log:warning("setProcessName arg name expected type string")
       return
     end
-    for _, provider in ipairs(setup._hooks) do
+    for _, provider in ipairs(hooks) do
       provider.setProcessName(name)
     end
   end
@@ -194,14 +195,14 @@ appleCake.setThreadName = function(name)
     log:Warning("setThreadName arg name expected type string")
     return
   end
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     provider.setThreadName(name)
   end
 end
 appleCake.setThreadName(setup.threadIndex == 0 and "main" or "thread:" .. setup.threadIndex)
 
 appleCake.startBatch = function()
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     if provider.supportsBatching then
       provider.startBatch()
     end
@@ -209,7 +210,7 @@ appleCake.startBatch = function()
 end
 
 appleCake.finishBatch = function()
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     if provider.supportsBatching then
       provider.finishBatch()
     end
@@ -217,7 +218,7 @@ appleCake.finishBatch = function()
 end
 
 appleCake.flush = function()
-  for _, provider in ipairs(setup._hooks) do
+  for _, provider in ipairs(hooks) do
     provider.flush()
   end
 end

@@ -24,14 +24,20 @@ local setupMT = {
   end,
 }
 local setup = setmetatable({
+  isActive = true,
   _providers = { },
   _hooks = { },
 }, setupMT)
 
+local baked = false
 setup._bake = function()
+  if baked then return end
+  baked = true
+
   setupMT.__newindex = function(_, _, _)
     log:warning("Cannot change AppleCake's setup table after you've required AppleCake")
   end
+
   -- Clean up functions
   local keys = { }
   for k, v in ipairs(_setup) do
@@ -42,14 +48,41 @@ setup._bake = function()
   for _, key in ipairs(keys) do
     _setup[key] = nil
   end
-  -- TODO push to channel
+  _setup._providers = nil
+
+  local s
   acSync:performAtomic(function(c)
-    local s = c:peek()
+    s = c:peek()
     if s == nil then
       log:error("The channel that should never be nil, is nil.") -- it can never be nil
       return
     end
+    if s.status == "baked" then
+      -- Cannot change settings already baked
+      return
+    end
+    s.status = "baked"
+    s.isActive = _setup.isActive
+
+    if s.isActive then
+      if #_setup._hooks == 0 then
+        s.isActive = false
+      else
+        s.hooks = { }
+        for _, provider in ipairs(_setup._hooks) do
+          table.insert(s.hooks, provider.__module)
+        end
+      end
+    end
+
+    c:push(s)
   end)
+  if _setup.isActive ~= s.isActive then
+    _setup.isActive = s.isActive
+    log:info("AppleCake disabled due to no active hooks")
+  else
+    log:info("AppleCake settings baked,", #_setup._hooks, "hooks added")
+  end
 end
 
 setup.enable = function()
@@ -104,18 +137,21 @@ setup._registerProvider = function(providerModule)
   setup._providers[provider.id] = provider
 end
 
+local s
 acSync:performAtomic(function(c)
-  local s = c:pop()
-  if s == nil then
-    log:error("The channel that should never be nil, is nil.") -- it can never be nil
-    return
-  end
+  s = c:pop()
   setup.threadIndex = s.threadIndex
   s.threadIndex = s.threadIndex + 1
-  if s.status == "baked" then
-    -- pull setting and bake this local setup too
-  end
   c:push(s)
 end)
+if s.status == "baked" then
+  setup.isActive = s.isActive
+  if s.isActive then
+    for _, providerModule in ipairs(s.hooks) do
+      table.insert(_setup._hooks, require(providerModule))
+    end
+  end
+  setup._bake()
+end
 
 return setup
