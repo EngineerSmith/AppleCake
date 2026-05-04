@@ -14,6 +14,18 @@ local getTime = function() -- Time in microseconds
   return _getTime() * 1e+6
 end
 
+local generateFuncName = function()
+  local info = debug.getinfo(3, "fnS")
+  local name = info.name or tostring(info.func):sub(10)
+  if info.short_src then
+    name = name .. "@" .. info.short_src
+  end
+  if info.linedefined then
+    name = name .. "#" .. info.linedefined
+  end
+  return name
+end
+
 -- Note, AppleCake disabled vars is also used when zones are disabled
 local emptyFunc = function() end
 local emptyProfile = { stop = emptyFunc, args = { }}
@@ -124,6 +136,10 @@ zone.profile = function(self, name, args, profile)
   end
 
   return profile
+end
+
+zone.profileFunc = function(self, args, profile)
+  return self:profile(profile and profile.name or generateFuncName(), args, profile)
 end
 
 zone.counter = function(self, name, value, units)
@@ -245,11 +261,7 @@ appleCake.profile = function(name, args, profile)
 end
 
 appleCake.profileFunc = function(args, profile)
-  local name = profile.name
-  if not name then
-    -- TODO use jit.funcinfo over debug info name
-  end
-  return rootZone:profile(name, args, profile)
+  return rootZone:profile(profile and profile.name or generateFuncName(), args, profile)
 end
 
 appleCake.counter = function(name, value, units)

@@ -52,11 +52,7 @@ setup._bake = function()
 
   local s
   acSync:performAtomic(function(c)
-    s = c:peek()
-    if s == nil then
-      log:error("The channel that should never be nil, is nil.") -- it can never be nil
-      return
-    end
+    s = c:pop()
     if s.status == "baked" then
       -- Cannot change settings already baked
       return
