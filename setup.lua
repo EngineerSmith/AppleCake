@@ -96,7 +96,7 @@ setup.addHook = function(providerID, options)
     return false, "not found"
   end
 
-  local success, errMsg = pcall(provider.init, options)
+  local success, errMsg = pcall(provider.init, options, setup.threadIndex)
   if not success then
     log:warning("Couldn't initiate provider:", providerID, ". Reason:", errMsg)
     return false, "not init"

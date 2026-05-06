@@ -15,6 +15,7 @@ local getTime = function() -- Time in microseconds
 end
 
 -- Benchmarking https://gist.github.com/EngineerSmith/f99c1ba503ec090f34b0659978a829c7
+-- ~5% faster than AppleCake 2.1
 local generateFuncName = function()
   local info = debug.getinfo(3, "fnS")
   local name = info.name or tostring(info.func):sub(10)
@@ -41,27 +42,26 @@ local emptyZone = {
   isEnabled = function() return false end,
 }
 
-local appleCakeDisabled = {
-  isActive = false,
-  startSession      = emptyFunc,
-  finishSession     = emptyFunc,
-  addHook           = emptyFunc,
-  removeHook        = emptyFunc,
-  _registerProvider = emptyFunc,
-  setProcessName    = emptyFunc,
-  setThreadName     = emptyFunc,
-  startBatch        = emptyFunc,
-  finishBatch       = emptyFunc,
-  autoProfileEvents = emptyFunc,
-  snapshotMemory    = emptyFunc,
-  zone = function(_, _) return emptyZone end,
-  profile     = emptyZone.profile,
-  profileFunc = emptyZone.profileFunc,
-  counter     = emptyZone.counter,
-  mark        = emptyZone.mark,
-}
-
 if not setup.isActive then
+  local appleCakeDisabled = {
+    isActive = false,
+    startSession      = emptyFunc,
+    finishSession     = emptyFunc,
+    addHook           = emptyFunc,
+    removeHook        = emptyFunc,
+    _registerProvider = emptyFunc,
+    setProcessName    = emptyFunc,
+    setThreadName     = emptyFunc,
+    startBatch        = emptyFunc,
+    finishBatch       = emptyFunc,
+    autoProfileEvents = emptyFunc,
+    snapshotMemory    = emptyFunc,
+    zone = function(_, _) return emptyZone end,
+    profile     = emptyZone.profile,
+    profileFunc = emptyZone.profileFunc,
+    counter     = emptyZone.counter,
+    mark        = emptyZone.mark,
+  }
   return appleCakeDisabled
 end
 
@@ -106,20 +106,19 @@ local getOrCreateZone = function(category, enabled)
   return self
 end
 
-zone.enable = function(self) self.enabled = true end
-zone.disable = function(self) self.enabled = false end
-zone.inherit = function(self) self.enabled = nil end
-zone.isEnabled = function(self)
-  if self.enabled ~= nil then
-    return self.enabled
-  end
-  if self.parent then
-    return self.parent:isEnabled()
+zoneMT.enable = function(self) self.enabled = true end
+zoneMT.disable = function(self) self.enabled = false end
+zoneMT.inherit = function(self) self.enabled = nil end
+zoneMT.isEnabled = function(self)
+  local current = self
+  while current do
+    if current.enabled ~= nil then return current.enabled end
+    current = current.parent
   end
   return appleCake.isActive -- fallback
 end
 
-zone.profile = function(self, name, args, profile)
+zoneMT.profile = function(self, name, args, profile)
   if not self:isEnabled() then return emptyProfile end
   local start = getTime()
 
@@ -139,20 +138,21 @@ zone.profile = function(self, name, args, profile)
   return profile
 end
 
-zone.profileFunc = function(self, args, profile)
+zoneMT.profileFunc = function(self, args, profile)
   return self:profile(profile and profile.name or generateFuncName(), args, profile)
 end
 
-zone.counter = function(self, name, value, units)
+zoneMT.counter = function(self, name, value, units)
   if not self:isEnabled() then return end
+  if type(value) ~= "number" then return end -- Should this be silently failing?
   local time = getTime()
 
   for _, provider in ipairs(hooks) do
-    provider.counter(self.category, name, time, value)
+    provider.counter(self.category, name, time, value, units)
   end
 end
 
-zone.mark = function(self, name, scope, args)
+zoneMT.mark = function(self, name, scope, args)
   if not self:isEnabled() then return end
   local time = getTime()
   local scope = scope or "process"
@@ -216,7 +216,7 @@ appleCake.setThreadName = function(name)
     provider.setThreadName(name)
   end
 end
-appleCake.setThreadName(setup.threadIndex == 0 and "main" or "thread:" .. setup.threadIndex)
+appleCake.setThreadName(not love.isThread and "main" or "thread_" .. setup.threadIndex)
 
 appleCake.startBatch = function()
   for _, provider in ipairs(hooks) do
@@ -240,15 +240,42 @@ appleCake.flush = function()
   end
 end
 
-appleCake.autoProfileEvents = function()
-  -- todo
-end
+local loveZone = appleCake.zone("love")
 
-appleCake.snapshotMemory = function()
-  -- todo
+appleCake.autoProfileEvents = function()
+  if not love.event then
+    -- love.event won't be loaded in config, but this seems like the cleanest way to do this.
+    -- Otherwise, if you do call `autoProfileEvents` within main.lua scope, but event module
+    -- wasn't enabled, then you'd get the warning about calling before handlers have been created.
+    log:info("autoProfileEvents was called, but love.event wasn't loaded.")
+    return
+  end
+  if not love.handlers then
+    log:warning("Cannot call autoProfileEvents before handlers have been created. (Move within main.lua scope)")
+    return
+  end
+
+  if love.handlers then
+    for k, v in pairs(love.handlers) do
+      local name = "event love." .. k
+      local p
+      love.handlers[k] = function(...)
+        p = loveZone:profile(name, { ... }, p)
+        local returns = { v(...) }
+        p:stop()
+        return table.unpack(returns)
+      end
+    end
+  end
 end
 
 local rootZone = getOrCreateZone("") -- We should be able to enable/disable this zone itself too
+
+appleCake.snapshotMemory = function(zone)
+  local usage = collectgarbage("count") * 1024
+  (zone or rootZone):counter("Memory Usage", usage, "memory")
+end
+
 appleCake.zone = function(category, enabled)
   if type(category) ~= "string" then
     log:warning("zone arg category expected type string")
