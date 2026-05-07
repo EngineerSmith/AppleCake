@@ -25,7 +25,7 @@ local varargsToString = function(...)
   local messageParts = { }
   for i = 1, select('#', ...) do
     local value = select(i, ...)
-    messageParts[i] = tostring(i)
+    messageParts[i] = tostring(value)
   end
   return table.concat(messageParts, " ")
 end

@@ -1,5 +1,4 @@
 local PATH = (...):match("(.-)[^%.]+$")
-local dirPATH = PATH:gsub("%.","/")
 
 local log = require(PATH .. "logger"):extend("setup", "bright_blue")
 
@@ -149,5 +148,9 @@ if s.status == "baked" then
   end
   setup._bake()
 end
+
+----- Default providers
+setup._registerProvider(PATH .. "providers.json")
+setup._registerProvider(PATH .. "providers.perfetto")
 
 return setup

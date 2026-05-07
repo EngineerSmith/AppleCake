@@ -1,5 +1,4 @@
 local PATH = (...):match("(.-)[^%.]+$")
-local dirPATH = PATH:gsub("%.","/")
 
 require(PATH .. "setupLove")
 love.__applecake = PATH
@@ -10,12 +9,13 @@ setup._bake()
 local hooks = setup._hooks
 
 local _getTime = love.timer.getTime
-local getTime = function() -- Time in microseconds
+-- Time in microseconds
+local getTime = function()
   return _getTime() * 1e+6
 end
 
 -- Benchmarking https://gist.github.com/EngineerSmith/f99c1ba503ec090f34b0659978a829c7
--- ~5% faster than AppleCake 2.1
+-- Performance: about the same as AppleCake 2.1's inline function, but more readable
 local generateFuncName = function()
   local info = debug.getinfo(3, "fnS")
   local name = info.name or tostring(info.func):sub(10)
@@ -142,10 +142,17 @@ zoneMT.profileFunc = function(self, args, profile)
   return self:profile(profile and profile.name or generateFuncName(), args, profile)
 end
 
+local counterWarnings = { } -- Used to prevent warning spam
 zoneMT.counter = function(self, name, value, units)
   if not self:isEnabled() then return end
-  if type(value) ~= "number" then return end -- Should this be silently failing?
   local time = getTime()
+  if type(value) ~= "number" then
+    if not counterWarnings[name] then
+      log:warning("counter (", name, ") received a non-number value. Type received:", type(value))
+      counterWarnings[name] = true
+    end
+    return
+  end
 
   for _, provider in ipairs(hooks) do
     provider.counter(self.category, name, time, value, units)
@@ -269,7 +276,7 @@ appleCake.autoProfileEvents = function()
   end
 end
 
-local rootZone = getOrCreateZone("") -- We should be able to enable/disable this zone itself too
+local rootZone = getOrCreateZone("", true)
 
 appleCake.snapshotMemory = function(zone)
   local usage = collectgarbage("count") * 1024

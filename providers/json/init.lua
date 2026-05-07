@@ -1,28 +1,51 @@
+local PATH = (...):match("(.-)[^%.]+$")
+local dirPATH = PATH:gsub("%.","/")
+
+local codec = require(PATH .. "codec")
+
 local json = {
   id = "json"
 
   requiresStartEvent = true,
   supportsBatching = true,
+
+  threadLocation = dirPATH .. "thread.lua",
+  channel = love.thread.newChannel(),
 }
 
 json.init = function(options)
+  if not json.thread then
+    json.thread = love.thread.newThread(json.threadLocation)
+  end
+
+  local filepath = "profile.json"
+  if type(options) == "table" then
+    if type(options.filepath) == "string" then
+      filepath = options.filepath
+    end
+  end
+
+  json.thread:start(json.channel, filepath)
   return true
 end
 
 json.shutdown = function()
+  if json.thread and json.thread:isRunning() then
 
+  end
 end
 
 json.startSession = function() end
 json.finishSession = function() end
 
 json.startBatch = function()
-  -- todo init batching
   json._setBatching(true)
+  codec.enableEncodingBatching()
 end
 json.finishBatch = function()
   -- todo push batch to channel
   json._setBatching(false)
+  local encodedMessage = codec.disableEncodingBatching()
 end
 
 -- Unbatched
