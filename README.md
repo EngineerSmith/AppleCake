@@ -83,7 +83,7 @@ function love.keypressed(key)
 end
 ```
 ## Viewing AppleCake profiling data
-Open your Chromium browser (Chrome and Edge have been tested to work) and go to `about://tracing`. If you don't have a Chromium browser, you can go to https://ui.perfetto.dev/v23.0-b574f45ca/assets/catapult_trace_viewer.html and it should work the same.
+Open your Chromium browser (Chrome and Edge have been tested to work) and go to `about://tracing`. If you don't have a Chromium browser, you can go to https://ui.perfetto.dev/v23.0-b574f45ca/assets/catapult_trace_viewer.html and it should work the same. It can also be dropped into https://ui.perfetto.dev/ for a more modern UI.
 
 Once the page has loaded, you can drag and drop the created profile JSON into the page. This will then load and show you the data. You can use the tools to move around, but it's recommended to use the keyboard shortcuts. Press `?` on your keyboard or in the top right of the page to see the shortcuts.
 Example of a frame of data, see the docs for more examples and details.
